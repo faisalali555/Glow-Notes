@@ -10,45 +10,16 @@
     <style>
         /* CSS Reset and Basic Setup */
         :root {
-            --bg-color: #0a0a1a;
-            --primary-glow: rgba(120, 81, 254, 0.7);
-            --secondary-glow: rgba(0, 255, 255, 0.7);
-            --danger-glow: rgba(255, 59, 48, 0.7);
-            --pin-glow: rgba(255, 220, 90, 0.8);
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text-color: #e0e0e0;
-            --text-muted-color: #a0a0a0;
-            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
-
-        /* --- THEMES --- */
-        body.theme-light {
-            --bg-color: #f0f2f5;
-            --primary-glow: rgba(50, 100, 250, 0.6);
-            --secondary-glow: rgba(0, 150, 255, 0.6);
-            --glass-bg: rgba(255, 255, 255, 0.6);
-            --glass-border: rgba(0, 0, 0, 0.1);
-            --text-color: #2c2c2c;
-            --text-muted-color: #6c6c6c;
-            --card-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.1);
-        }
-         body.theme-light .made-by, body.theme-light .card-btn, body.theme-light .header-btn, body.theme-light select {
-            color: var(--text-color);
-        }
-        body.theme-light select {
-             background-image: url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-        }
-        
-        body.theme-synthwave {
             --bg-color: #1a103c;
             --primary-glow: rgba(255, 0, 110, 0.7);
             --secondary-glow: rgba(0, 229, 255, 0.7);
+            --danger-glow: rgba(255, 59, 48, 0.7);
             --pin-glow: rgba(110, 255, 128, 0.8);
             --glass-bg: rgba(42, 29, 90, 0.5);
             --glass-border: rgba(255, 0, 110, 0.3);
             --text-color: #f0f0f0;
             --text-muted-color: #9a8cce;
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -100,6 +71,7 @@
         .input-field, .textarea-field, .action-btn, select { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.75rem 1rem; color: var(--text-color); font-family: inherit; font-size: 1rem; transition: all 0.3s ease; -webkit-appearance: none; appearance: none; }
         select { background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); background-repeat: no-repeat; background-position-x: 98%; background-position-y: 50%; }
         .action-btn { cursor: pointer; text-align: center; }
+        .action-btn:hover { border-color: var(--primary-glow); box-shadow: 0 0 10px -3px var(--primary-glow); }
         .input-field::placeholder, .textarea-field::placeholder { color: var(--text-muted-color); }
         .input-field:focus, .textarea-field:focus, select:focus { outline: none; border-color: var(--primary-glow); box-shadow: 0 0 15px -2px var(--primary-glow); }
         .textarea-field { resize: vertical; min-height: 100px; }
@@ -115,11 +87,12 @@
         #reminder-input { flex-grow: 1; display: none; }
         #clear-reminder-btn { background: none; border: none; font-size: 1.2rem; color: var(--danger-glow); cursor: pointer; display: none; }
         
-        /* Filter Section */
-        #filter-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        /* Filter & IO Section */
+        #filter-controls, #io-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        #import-notes-input { display: none; }
 
         /* Notes Grid */
-        #notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; perspective: 1500px; transition: all 0.4s ease; }
+        #notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; perspective: 1500px; transition: all 0.4s ease; margin-top: 2rem;}
         .note-card { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.5s ease, border-color 0.4s ease; position: relative; }
         .note-card.pinned { border-color: var(--pin-glow); box-shadow: 0 0 20px -5px var(--pin-glow), var(--card-shadow); }
         .note-card.in-trash { opacity: 0.7; filter: grayscale(80%); }
@@ -132,54 +105,62 @@
         .pin-btn:hover { background-color: var(--pin-glow); color: var(--bg-color); transform: scale(1.1); }
         .edit-btn:hover, .restore-btn:hover { background: var(--secondary-glow); color: var(--bg-color); transform: scale(1.1); }
         .delete-btn:hover { background: var(--danger-glow); color: white; transform: scale(1.1); }
-        .note-topic { font-size: 1.25rem; font-weight: 600; color: #fff; padding-bottom: 0.5rem; border-bottom: 1px solid var(--glass-border); padding-right: 110px; }
+        .fullscreen-btn:hover, .share-btn:hover, .schedule-btn:hover { background-color: var(--text-muted-color); color: var(--bg-color); }
+        .note-topic { font-size: 1.25rem; font-weight: 600; color: #fff; padding-bottom: 0.5rem; border-bottom: 1px solid var(--glass-border); padding-right: 200px; }
         .note-content { font-size: 1rem; line-height: 1.6; flex-grow: 1; white-space: pre-wrap; word-wrap: break-word; }
         .note-footer { font-size: 0.8rem; color: var(--text-muted-color); text-align: right; border-top: 1px solid var(--glass-border); padding-top: 0.75rem; margin-top: auto; display: flex; justify-content: space-between; align-items: center; }
         .reminder-display { display: flex; align-items: center; gap: 0.5rem; }
         .reminder-display.due { color: var(--primary-glow); text-shadow: 0 0 5px var(--primary-glow); }
+        .loop-icon { font-size: 0.7rem; }
         
         /* Modal Styles */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .modal-overlay.visible { opacity: 1; pointer-events: auto; }
         .modal-box { padding: 2rem; max-width: 500px; width: 90%; text-align: center; transform: scale(0.9); transition: transform 0.3s ease; }
         .modal-overlay.visible .modal-box { transform: scale(1); }
-        .modal-box h2 { margin-bottom: 1.5rem; text-shadow: 0 0 8px var(--primary-glow); }
+        .modal-box h2, .modal-box h3 { margin-bottom: 1.5rem; text-shadow: 0 0 8px var(--primary-glow); }
         .modal-box p { margin-bottom: 1.5rem; font-size: 1.1rem; line-height: 1.5; }
-        .modal-buttons { display: flex; justify-content: center; gap: 1rem; }
+        .modal-buttons { display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; flex-direction: column; }
         .modal-btn { padding: 0.6rem 1.2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
         .modal-confirm-btn { background-color: var(--danger-glow); color: white; }
         .modal-confirm-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px var(--danger-glow); }
         .modal-close-btn { background-color: var(--glass-border); color: var(--text-color); }
         .modal-close-btn:hover { background-color: rgba(255,255,255,0.2); }
         
+        #share-link-input { width: 100%; word-wrap: break-word; text-align: left; padding: 1rem; margin-bottom: 1rem; }
+        
         /* Analytics & Settings Modal Content */
         .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; text-align: left; margin-bottom: 2rem; }
         .analytics-item { background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; }
         .analytics-item .count { font-size: 2rem; font-weight: 700; }
-        .theme-buttons { display: flex; justify-content: center; gap: 1rem; }
-        .theme-btn { padding: 0.75rem 1.5rem; }
+        #notification-status-container { margin-top: 2rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px; }
+        #notification-status-container p { font-size: 0.9rem; margin-top: 5px; margin-bottom: 0;}
+
+        /* Custom Recurring Reminder UI */
+        #custom-reminder-form { display: flex; gap: 10px; margin-top: 1rem; }
+        #custom-reminder-value { width: 80px; }
+
 
         /* Focus Mode */
         body.focus-active .container > *:not(.form-section):not(.header-controls) { opacity: 0; filter: blur(5px); pointer-events: none; }
         body.focus-active .form-section { transform: scale(1.03); box-shadow: 0 10px 50px rgba(0,0,0,0.5), 0 0 40px var(--primary-glow); }
         
+        /* Full Screen Reader */
+        #reader-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; background: var(--bg-color); display: none; opacity: 0; transition: opacity 0.3s ease; }
+        #reader-view.visible { display: block; opacity: 1; }
+        #reader-content { max-width: 800px; margin: 0 auto; padding: 4rem 2rem; color: var(--text-color); }
+        #reader-content h1 { font-size: 3rem; text-shadow: 0 0 10px var(--primary-glow); margin-bottom: 2rem; }
+        #reader-content p { font-size: 1.2rem; line-height: 1.8; white-space: pre-wrap; }
+        #reader-close-btn { position: absolute; top: 2rem; right: 2rem; font-size: 2rem; background: none; border: none; color: var(--text-muted-color); cursor: pointer; }
+
         /* Responsive */
-        @media (max-width: 768px) { .container { padding: 1rem; } #filter-controls {grid-template-columns: 1fr;} }
+        @media (max-width: 768px) { .container { padding: 1rem; } #filter-controls, #io-controls {grid-template-columns: 1fr;} }
     </style>
 </head>
-<body>
-    <!-- This script runs immediately to prevent a flash of the wrong theme -->
-    <script>
-        (function() {
-            const savedTheme = localStorage.getItem('glow-notes-theme') || 'synthwave'; // Default to synthwave
-            if (savedTheme && savedTheme !== 'default') {
-                document.body.className = `theme-${savedTheme}`;
-            }
-        })();
-    </script>
+<body class="theme-synthwave"> <!-- Default theme set here -->
 
     <div class="container">
-        <div class="made-by">Made By Faisal Ali 💗</div>
+        <div class="made-by">Made By Muhammad Faisal Ali 💗</div>
         <h1>GlowNotes</h1>
         <p class="subtitle">Your thoughts, in glass & glow.</p>
 
@@ -207,7 +188,12 @@
             </select>
         </div>
         
-        <!-- Form is now placed below filters -->
+        <div id="io-controls">
+            <label for="import-notes-input" class="action-btn glass">Import Notes</label>
+            <input type="file" id="import-notes-input" accept=".json">
+            <button id="export-notes-btn" class="action-btn glass">Export Notes</button>
+        </div>
+
         <section class="form-section glass">
             <input type="hidden" id="edit-note-id">
             <div class="input-group">
@@ -230,6 +216,12 @@
 
     <!-- Generic Modal -->
     <div id="modal-container" class="modal-overlay"></div>
+    
+    <!-- Full Screen Reader View -->
+    <div id="reader-view">
+        <button id="reader-close-btn">&times;</button>
+        <div id="reader-content"></div>
+    </div>
 
 
     <script>
@@ -238,6 +230,7 @@
             // --- ELEMENT SELECTIONS ---
             const elements = {
                 body: document.body,
+                container: document.querySelector('.container'),
                 noteTopicInput: document.getElementById('note-topic'), noteContentInput: document.getElementById('note-content'),
                 saveNoteBtn: document.getElementById('save-note-btn'), cancelEditBtn: document.getElementById('cancel-edit-btn'),
                 notesGrid: document.getElementById('notes-grid'), editNoteIdInput: document.getElementById('edit-note-id'),
@@ -246,12 +239,42 @@
                 reminderInput: document.getElementById('reminder-input'), clearReminderBtn: document.getElementById('clear-reminder-btn'),
                 settingsBtn: document.getElementById('settings-btn'),
                 filterInput: document.getElementById('filter-input'), dateFilter: document.getElementById('date-filter'),
-                propertyFilter: document.getElementById('property-filter')
+                propertyFilter: document.getElementById('property-filter'),
+                exportBtn: document.getElementById('export-notes-btn'), importInput: document.getElementById('import-notes-input'),
+                readerView: document.getElementById('reader-view'), readerContent: document.getElementById('reader-content'),
+                readerCloseBtn: document.getElementById('reader-close-btn')
             };
 
             let state = { currentView: 'notes' };
             
-            // --- MODAL FACTORY ---
+            // --- MODAL FACTORY (BUG FIXED) ---
+            const showConfirmationModal = (message, confirmText = 'Confirm') => {
+                return new Promise((resolve) => {
+                    const content = `<p>${escapeHTML(message)}</p>`;
+                    const buttons = `<button class="modal-btn modal-close-btn">Cancel</button><button class="modal-btn modal-confirm-btn" id="modal-confirm-action">${escapeHTML(confirmText)}</button>`;
+                    showModal(content, buttons);
+
+                    const confirmBtn = document.getElementById('modal-confirm-action');
+                    const modal = elements.modalContainer;
+                    
+                    const onConfirm = () => { cleanup(); resolve(true); };
+                    const onCancel = (e) => {
+                         if (e.target === modal || e.target.classList.contains('modal-close-btn')) {
+                            cleanup();
+                            resolve(false);
+                        }
+                    };
+                    const cleanup = () => {
+                        confirmBtn.removeEventListener('click', onConfirm);
+                        modal.removeEventListener('click', onCancel);
+                        hideModal();
+                    };
+
+                    confirmBtn.addEventListener('click', onConfirm);
+                    modal.addEventListener('click', onCancel);
+                });
+            };
+
             const showModal = (content, buttons) => {
                 elements.modalContainer.innerHTML = `<div class="modal-box glass">${content}</div>`;
                 if(buttons) {
@@ -289,7 +312,6 @@
                     elements.viewTrashBtn.classList.remove('active'); elements.viewTrashBtn.textContent = '🗑️'; elements.viewTrashBtn.title = 'View Trash';
                 }
 
-                // Apply filters
                 if (searchTerm) notesToRender = notesToRender.filter(n => n.topic.toLowerCase().includes(searchTerm) || n.content.toLowerCase().includes(searchTerm));
                 if (propertyFilterValue === 'pinned') notesToRender = notesToRender.filter(n => n.pinned);
                 if (propertyFilterValue === 'reminder') notesToRender = notesToRender.filter(n => n.reminder);
@@ -323,8 +345,14 @@
                 noteCard.dataset.id = note.id;
                 let buttonsHTML = note.inTrash
                     ? `<button class="card-btn restore-btn" title="Restore Note">♻️</button><button class="card-btn delete-btn modal-confirm-btn" title="Delete Forever">&times;</button>`
-                    : `<button class="card-btn pin-btn ${note.pinned ? 'active' : ''}" title="Pin Note">📌</button><button class="card-btn edit-btn" title="Edit Note">✎</button><button class="card-btn delete-btn" title="Move to Trash">🗑️</button>`;
-                let reminderIconHTML = (note.reminder && !note.inTrash) ? `<span class="reminder-display ${new Date(note.reminder).getTime() < Date.now() ? 'due' : ''}" title="Reminder: ${formatTimestamp(note.reminder)}">⏰</span>` : '';
+                    : `<button class="card-btn schedule-btn" title="Schedule Reminder">⏰</button><button class="card-btn share-btn" title="Share Note">🔗</button><button class="card-btn fullscreen-btn" title="Full Screen">↔️</button><button class="card-btn pin-btn ${note.pinned ? 'active' : ''}" title="Pin Note">📌</button><button class="card-btn edit-btn" title="Edit Note">✎</button><button class="card-btn delete-btn" title="Move to Trash">🗑️</button>`;
+                
+                let reminderIconHTML = '';
+                if(note.reminder && !note.inTrash) {
+                    const loopIcon = note.loop ? `<span class="loop-icon">🔄</span>` : '';
+                    const isDue = new Date(note.reminder).getTime() < Date.now();
+                    reminderIconHTML = `<span class="reminder-display ${isDue ? 'due' : ''}" title="Reminder: ${formatTimestamp(note.reminder)}">${loopIcon}⏰</span>`;
+                }
                 const displayTimestamp = note.reminder && !note.inTrash ? note.reminder : note.id;
                 noteCard.innerHTML = `<div class="card-buttons">${buttonsHTML}</div><h3 class="note-topic">${escapeHTML(note.topic)}</h3><p class="note-content">${escapeHTML(note.content)}</p><div class="note-footer">${reminderIconHTML}<span>${formatTimestamp(displayTimestamp)}</span></div>`;
                 
@@ -332,6 +360,9 @@
                     noteCard.querySelector('.restore-btn').onclick = e => { e.stopPropagation(); handleRestoreNote(note.id); };
                     noteCard.querySelector('.delete-btn').onclick = e => { e.stopPropagation(); handlePermanentDelete(note.id); };
                 } else {
+                    noteCard.querySelector('.schedule-btn').onclick = e => { e.stopPropagation(); showScheduleModal(note.id); };
+                    noteCard.querySelector('.share-btn').onclick = e => { e.stopPropagation(); handleShareNote(note); };
+                    noteCard.querySelector('.fullscreen-btn').onclick = e => { e.stopPropagation(); openReader(note); };
                     noteCard.querySelector('.pin-btn').onclick = e => { e.stopPropagation(); handleTogglePin(note.id); };
                     noteCard.querySelector('.edit-btn').onclick = e => { e.stopPropagation(); handleStartEdit(note); };
                     noteCard.querySelector('.delete-btn').onclick = e => { e.stopPropagation(); handleMoveToTrash(note.id); };
@@ -352,9 +383,9 @@
                 if (!topic || !content) { showModal(`<p>Please provide both a topic and content.</p>`, `<button class="modal-btn modal-close-btn">OK</button>`); return; }
                 let notes = getNotes();
                 if (noteIdToEdit) {
-                    notes = notes.map(note => note.id == noteIdToEdit ? { ...note, topic, content, reminder: reminderTime, reminderFired: reminderTime ? false : note.reminderFired } : note);
+                    notes = notes.map(note => note.id == noteIdToEdit ? { ...note, topic, content, reminder: reminderTime, reminderFired: reminderTime ? false : note.reminderFired, loop: null } : note);
                 } else {
-                    notes.push({ id: Date.now(), topic, content, pinned: false, inTrash: false, reminder: reminderTime, reminderFired: false });
+                    notes.push({ id: Date.now(), topic, content, pinned: false, inTrash: false, reminder: reminderTime, reminderFired: false, loop: null });
                 }
                 saveNotes(notes); resetForm(); render();
             };
@@ -373,29 +404,27 @@
             
             const handleTogglePin = (id) => { let notes = getNotes(); notes.forEach(n => { if(n.id === id) n.pinned = !n.pinned }); saveNotes(notes); render(); };
             
-            const handleMoveToTrash = (id) => {
-                showModal('<p>Move this note to trash?</p>', `<button class="modal-btn modal-close-btn">Cancel</button><button class="modal-btn modal-confirm-btn" id="confirm-trash-btn">Trash</button>`);
-                document.getElementById('confirm-trash-btn').onclick = () => {
+            async function handleMoveToTrash(id) {
+                const confirmed = await showConfirmationModal('Move this note to trash?', 'Trash');
+                if (confirmed) {
                     let notes = getNotes();
                     notes.forEach(n => { if(n.id === id) n.inTrash = true });
                     saveNotes(notes);
                     render();
-                    hideModal();
-                };
-            };
+                }
+            }
             
             const handleRestoreNote = (id) => { let notes = getNotes(); notes.forEach(n => { if(n.id === id) n.inTrash = false }); saveNotes(notes); render(); };
 
-            const handlePermanentDelete = (id) => {
-                showModal('<p>Permanently delete? This cannot be undone.</p>', `<button class="modal-btn modal-close-btn">Cancel</button><button class="modal-btn modal-confirm-btn" id="confirm-delete-btn">Delete</button>`);
-                document.getElementById('confirm-delete-btn').onclick = () => {
+            async function handlePermanentDelete(id) {
+                const confirmed = await showConfirmationModal('Permanently delete? This cannot be undone.', 'Delete');
+                if (confirmed) {
                     let notes = getNotes();
                     notes = notes.filter(n => n.id !== id);
                     saveNotes(notes);
                     render();
-                    hideModal();
-                };
-            };
+                }
+            }
             
             // --- FEATURE HANDLERS ---
             elements.viewTrashBtn.onclick = () => { state.currentView = state.currentView === 'notes' ? 'trash' : 'notes'; render(); };
@@ -409,8 +438,15 @@
                 }
             };
             elements.clearReminderBtn.onclick = resetReminderUI;
+
+            const openReader = (note) => {
+                elements.readerContent.innerHTML = `<h1>${escapeHTML(note.topic)}</h1><p>${escapeHTML(note.content)}</p>`;
+                elements.readerView.classList.add('visible');
+            };
+            const closeReader = () => elements.readerView.classList.remove('visible');
+            elements.readerCloseBtn.onclick = closeReader;
+            document.onkeydown = (e) => { if (e.key === "Escape") closeReader(); };
             
-            // Settings and Analytics
             elements.settingsBtn.onclick = () => {
                 const notes = getNotes();
                 const totalActive = notes.filter(n => !n.inTrash).length;
@@ -418,66 +454,191 @@
                 const totalTrash = notes.filter(n => n.inTrash).length;
                 const totalReminders = notes.filter(n => !n.inTrash && n.reminder).length;
                 
-                const analyticsHTML = `
-                    <h2>Analytics & Settings</h2>
-                    <div class="analytics-grid">
-                        <div class="analytics-item"><div>Active Notes</div><div class="count">${totalActive}</div></div>
-                        <div class="analytics-item"><div>Pinned Notes</div><div class="count">${totalPinned}</div></div>
-                        <div class="analytics-item"><div>Notes in Trash</div><div class="count">${totalTrash}</div></div>
-                        <div class="analytics-item"><div>Active Reminders</div><div class="count">${totalReminders}</div></div>
-                    </div>
-                    <h3>Themes</h3>
-                    <div class="theme-buttons">
-                        <button class="action-btn theme-btn" data-theme="default">Glow</button>
-                        <button class="action-btn theme-btn" data-theme="light">Light</button>
-                        <button class="action-btn theme-btn" data-theme="synthwave">Synthwave</button>
-                    </div>`;
+                const analyticsHTML = `<h2>Analytics & Settings</h2><div class="analytics-grid"><div class="analytics-item"><div>Active Notes</div><div class="count">${totalActive}</div></div><div class="analytics-item"><div>Pinned Notes</div><div class="count">${totalPinned}</div></div><div class="analytics-item"><div>Notes in Trash</div><div class="count">${totalTrash}</div></div><div class="analytics-item"><div>Active Reminders</div><div class="count">${totalReminders}</div></div></div><div id="notification-status-container"><h3>Notifications</h3><div id="notification-status"></div></div>`;
                 showModal(analyticsHTML, `<button class="modal-btn modal-close-btn">Close</button>`);
-                document.querySelectorAll('.theme-btn').forEach(btn => btn.onclick = (e) => switchTheme(e.target.dataset.theme));
+                renderNotificationStatus();
             };
             
-            const switchTheme = (theme) => {
-                elements.body.className = theme === 'default' ? '' : `theme-${theme}`;
-                localStorage.setItem('glow-notes-theme', theme);
-                // hideModal is not always needed, but good to have if theme is changed from modal
-                if(elements.modalContainer.classList.contains('visible')) hideModal();
+            const renderNotificationStatus = () => {
+                const notifStatusEl = document.getElementById('notification-status');
+                if(!notifStatusEl) return;
+                const permission = Notification.permission;
+                let notifHTML = `Status: <span style="font-weight: bold; text-transform: capitalize;">${permission}</span>`;
+                if (permission === 'default') {
+                    notifHTML += ` <button class="action-btn" id="request-notif-btn" style="width: auto; padding: 5px 10px; font-size: 0.9rem; margin-left: 10px;">Request Permission</button>`;
+                } else if (permission === 'denied') {
+                    notifHTML += `<p>You have blocked notifications. Please enable them in your browser settings for this site.</p>`;
+                }
+                notifStatusEl.innerHTML = notifHTML;
+                if (permission === 'default') {
+                    document.getElementById('request-notif-btn').onclick = () => Notification.requestPermission().then(renderNotificationStatus);
+                }
+            };
+            
+            const showScheduleModal = (id) => {
+                 const note = getNotes().find(n => n.id === id);
+                 let content;
+                 if (note.loop) {
+                     content = `<h2>Recurring Reminder Active</h2><p>This note has a recurring reminder set.</p>`;
+                 } else {
+                     content = `
+                        <h2>Set Reminder</h2>
+                        <p>Choose a quick option or set a custom recurring reminder.</p>
+                        <div class="modal-buttons">
+                           <button class="modal-btn" data-duration="15m">In 15 Minutes</button>
+                           <button class="modal-btn" data-duration="1h">In 1 Hour</button>
+                           <button class="modal-btn" data-duration="1d">Tomorrow</button>
+                        </div>
+                        <hr style="margin: 20px 0; border-color: var(--glass-border);">
+                        <h3>Custom Recurring Reminder</h3>
+                        <div id="custom-reminder-form">
+                           <input type="number" id="custom-reminder-value" class="input-field" value="10" min="1">
+                           <select id="custom-reminder-unit" class="input-field">
+                               <option value="minutes">Minutes</option>
+                               <option value="hours">Hours</option>
+                               <option value="days">Days</option>
+                           </select>
+                           <button class="modal-btn" id="set-recurring-btn">Start Loop</button>
+                        </div>
+                     `;
+                 }
+                 const buttons = note.loop ? `<button class="modal-btn modal-confirm-btn" id="stop-loop-btn">Stop Recurring Reminder</button><button class="modal-btn modal-close-btn">Close</button>` : `<button class="modal-btn modal-close-btn">Cancel</button>`;
+                 showModal(content, buttons);
+
+                 const modalBox = elements.modalContainer.querySelector('.modal-box');
+                 modalBox.addEventListener('click', (e) => {
+                    if(e.target.dataset.duration) setQuickReminder(id, e.target.dataset.duration);
+                    if(e.target.id === 'set-recurring-btn') handleSetRecurring(id);
+                    if(e.target.id === 'stop-loop-btn') stopRecurringReminder(id);
+                 });
             };
 
-            // --- IN-PAGE REMINDER CHECKER ---
+            const setQuickReminder = (id, duration) => {
+                let reminderTime;
+                const now = Date.now();
+                if(duration === '15m') reminderTime = now + 15 * 60 * 1000;
+                if(duration === '1h') reminderTime = now + 60 * 60 * 1000;
+                if(duration === '1d') reminderTime = now + 24 * 60 * 60 * 1000;
+                
+                if(reminderTime) {
+                    let notes = getNotes();
+                    notes = notes.map(note => note.id === id ? { ...note, reminder: reminderTime, reminderFired: false, loop: null } : note);
+                    saveNotes(notes); render(); hideModal();
+                }
+            };
+
+            const handleSetRecurring = (id) => {
+                const value = parseInt(document.getElementById('custom-reminder-value').value, 10);
+                const unit = document.getElementById('custom-reminder-unit').value;
+                if (isNaN(value) || value <= 0) return;
+
+                let intervalMs;
+                if (unit === 'minutes') intervalMs = value * 60 * 1000;
+                if (unit === 'hours') intervalMs = value * 60 * 60 * 1000;
+                if (unit === 'days') intervalMs = value * 24 * 60 * 60 * 1000;
+                
+                let notes = getNotes();
+                notes = notes.map(note => note.id === id ? { ...note, reminder: Date.now() + intervalMs, reminderFired: false, loop: { interval: intervalMs, value, unit } } : note);
+                saveNotes(notes); render(); hideModal();
+            };
+            
+            const stopRecurringReminder = (id) => {
+                let notes = getNotes();
+                notes = notes.map(note => note.id === id ? { ...note, reminder: null, loop: null } : note);
+                saveNotes(notes); render(); hideModal();
+            };
+
             const checkReminders = () => {
+                if(Notification.permission !== 'granted') return;
                 const notes = getNotes();
                 const now = Date.now();
                 let notesUpdated = false;
                 notes.forEach(note => {
-                    if (!note.inTrash && note.reminder && !note.reminderFired && new Date(note.reminder).getTime() <= now) {
-                        if ('Notification' in window && Notification.permission === 'granted') {
-                             new Notification('GlowNotes Reminder', { body: note.topic, icon: 'https://placehold.co/128x128/8A2BE2/FFFFFF?text=GN' });
+                    if (!note.inTrash && note.reminder && new Date(note.reminder).getTime() <= now) {
+                        new Notification('GlowNotes Reminder', { body: note.topic, icon: 'https://placehold.co/128x128/8A2BE2/FFFFFF?text=GN', tag: `note-${note.id}` });
+                        
+                        if (note.loop) {
+                             note.reminder = Date.now() + note.loop.interval;
+                        } else {
+                             note.reminderFired = true;
                         }
-                        note.reminderFired = true;
                         notesUpdated = true;
                     }
                 });
                 if(notesUpdated) saveNotes(notes);
+            };
+            
+            const handleShareNote = (note) => {
+                const noteData = { topic: note.topic, content: note.content };
+                const encodedData = btoa(JSON.stringify(noteData));
+                const url = `${window.location.origin}${window.location.pathname}?note=${encodedData}`;
+                const content = `<h2>Share Note</h2><p>Share this read-only link with anyone.</p><textarea id="share-link-input" class="input-field" rows="3" readonly>${url}</textarea>`;
+                const buttons = `<button class="modal-btn" id="copy-link-btn">Copy Link</button><button class="modal-btn modal-close-btn">Close</button>`;
+                showModal(content, buttons);
+                document.getElementById('copy-link-btn').onclick = () => {
+                    const input = document.getElementById('share-link-input');
+                    input.select();
+                    document.execCommand('copy');
+                };
+            };
+            
+            const handleExportNotes = () => {
+                const notes = getNotes();
+                if (notes.length === 0) { showModal("<p>There are no notes to export.</p>", `<button class="modal-btn modal-close-btn">OK</button>`); return; }
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(notes, null, 2));
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", `glow-notes-backup-${Date.now()}.json`);
+                document.body.appendChild(downloadAnchorNode);
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
+            };
+
+            const handleImportNotes = (event) => {
+                const file = event.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        const importedNotes = JSON.parse(e.target.result);
+                        if (!Array.isArray(importedNotes)) throw new Error("Invalid file format.");
+                        const merge = await showConfirmationModal('Merge with existing notes? (Cancel to replace)', 'Merge');
+                        const currentNotes = getNotes();
+                        let finalNotes = merge ? [...currentNotes, ...importedNotes.filter(n => !currentNotes.find(c => c.id === n.id))] : importedNotes;
+                        saveNotes(finalNotes); render();
+                    } catch (error) {
+                        showModal("<p>Import failed. Invalid file.</p>", `<button class="modal-btn modal-close-btn">OK</button>`);
+                    } finally {
+                        elements.importInput.value = '';
+                    }
+                };
+                reader.readAsText(file);
+            };
+
+            const checkForSharedNote = () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const sharedNoteData = urlParams.get('note');
+                if (sharedNoteData) {
+                    try {
+                        const decodedData = atob(sharedNoteData);
+                        const note = JSON.parse(decodedData);
+                        elements.container.style.display = 'none'; // Hide main app
+                        openReader(note);
+                    } catch (e) {
+                        console.error("Failed to decode shared note:", e);
+                    }
+                }
             };
 
             // --- INITIALIZATION ---
             [elements.filterInput, elements.dateFilter, elements.propertyFilter].forEach(el => el.oninput = render);
             elements.saveNoteBtn.onclick = handleSaveOrUpdateNote;
             elements.cancelEditBtn.onclick = resetForm;
+            elements.exportBtn.onclick = handleExportNotes;
+            elements.importInput.onchange = handleImportNotes;
             
-            if ('Notification' in window && Notification.permission !== 'granted') Notification.requestPermission();
-            
-            // No longer load theme here, it's done in the head script
-            // loadTheme();
-            
-            // Check for theme at start, without this, the initial load is themeless until a switch
-            const initialTheme = localStorage.getItem('glow-notes-theme') || 'synthwave';
-            if (initialTheme && initialTheme !== 'default') {
-                elements.body.classList.add(`theme-${initialTheme}`);
-            }
-
-            setInterval(checkReminders, 15000); // Check every 15 seconds
+            setInterval(checkReminders, 15000);
             render();
+            checkForSharedNote();
         });
     </script>
 </body>
