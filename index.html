@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlowNotes - 3D Glassmorphic Notes</title>
+    <title>GlowNotes - The Complete App</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -14,6 +14,7 @@
             --primary-glow: rgba(120, 81, 254, 0.7);
             --secondary-glow: rgba(0, 255, 255, 0.7);
             --danger-glow: rgba(255, 59, 48, 0.7);
+            --pin-glow: rgba(255, 220, 90, 0.8);
             --glass-bg: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.1);
             --text-color: #e0e0e0;
@@ -21,11 +22,36 @@
             --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* --- THEMES --- */
+        body.theme-light {
+            --bg-color: #f0f2f5;
+            --primary-glow: rgba(50, 100, 250, 0.6);
+            --secondary-glow: rgba(0, 150, 255, 0.6);
+            --glass-bg: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --text-color: #2c2c2c;
+            --text-muted-color: #6c6c6c;
+            --card-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.1);
         }
+         body.theme-light .made-by, body.theme-light .card-btn, body.theme-light .header-btn, body.theme-light select {
+            color: var(--text-color);
+        }
+        body.theme-light select {
+             background-image: url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+        }
+        
+        body.theme-synthwave {
+            --bg-color: #1a103c;
+            --primary-glow: rgba(255, 0, 110, 0.7);
+            --secondary-glow: rgba(0, 229, 255, 0.7);
+            --pin-glow: rgba(110, 255, 128, 0.8);
+            --glass-bg: rgba(42, 29, 90, 0.5);
+            --glass-border: rgba(255, 0, 110, 0.3);
+            --text-color: #f0f0f0;
+            --text-muted-color: #9a8cce;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', sans-serif;
@@ -33,564 +59,425 @@
             color: var(--text-color);
             overflow-x: hidden;
             min-height: 100vh;
+            transition: background-color 0.4s ease, color 0.4s ease;
         }
 
-        /* Animated Gradient Background */
         body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: linear-gradient(135deg, var(--primary-glow), var(--bg-color), var(--secondary-glow));
             background-size: 300% 300%;
             animation: gradient-animation 15s ease infinite;
-            z-index: -1;
-            filter: blur(100px);
-            opacity: 0.6;
-        }
-
-        @keyframes gradient-animation {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg-color);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--glass-border);
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-glow);
+            z-index: -1; filter: blur(100px); opacity: 0.6;
+            transition: opacity 0.4s ease;
         }
 
         /* Main container and typography */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-            position: relative;
-            z-index: 1;
-        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; position: relative; z-index: 1; transition: opacity 0.4s ease; }
+        h1 { font-size: 2.5rem; font-weight: 700; text-align: center; margin-bottom: 0.5rem; text-shadow: 0 0 15px var(--primary-glow); }
+        .subtitle { text-align: center; color: var(--text-muted-color); margin-bottom: 1rem; }
+        .made-by { position: absolute; top: 1.5rem; right: 2rem; font-size: 0.9rem; font-weight: 500; z-index: 2; transform: perspective(500px) rotateY(-10deg); color: var(--text-muted-color); }
+        .glass { background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 16px; border: 1px solid var(--glass-border); box-shadow: var(--card-shadow); transition: background 0.4s, border 0.4s; }
 
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 0.5rem;
-            text-shadow: 0 0 15px var(--primary-glow);
-        }
+        /* --- Header controls --- */
+        .header-controls { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; transition: all 0.4s ease; }
         
-        .subtitle {
-            text-align: center;
-            color: var(--text-muted-color);
-            margin-bottom: 2.5rem;
-        }
+        .focus-switch { display: flex; align-items: center; gap: 0.5rem; }
+        .focus-switch .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .focus-switch .switch input { opacity: 0; width: 0; height: 0; }
+        .focus-switch .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 24px; }
+        .focus-switch .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        .focus-switch input:checked + .slider { background-color: var(--primary-glow); }
+        .focus-switch input:checked + .slider:before { transform: translateX(20px); }
         
-        /* Updated style for "Made By Ali" text */
-        .made-by {
-            position: absolute;
-            top: 1.5rem;
-            right: 2rem;
-            font-size: 0.9rem;
-            font-weight: 500;
-            z-index: 2;
-            background: linear-gradient(90deg, #9f78ff, #00ffff, #9f78ff);
-            background-size: 200% auto;
-            color: transparent;
-            -webkit-background-clip: text;
-            background-clip: text;
-            animation: shine 4s linear infinite;
-            text-shadow: 0 0 5px rgba(120, 81, 254, 0.5), 0 0 10px rgba(0, 255, 255, 0.5);
-            transform: perspective(500px) rotateY(-10deg);
-        }
-        
-        @keyframes shine {
-            to {
-                background-position: 200% center;
-            }
-        }
-
-        /* Glassmorphism utility class */
-        .glass {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 16px;
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--card-shadow);
-        }
+        .header-btn { font-size: 1.2rem; background: none; border: none; color: var(--text-muted-color); cursor: pointer; padding: 5px; transition: all 0.3s ease; }
+        #view-trash-btn:hover, #view-trash-btn.active { color: var(--danger-glow); text-shadow: 0 0 10px var(--danger-glow); }
+        #settings-btn:hover { color: var(--primary-glow); transform: rotate(45deg); }
 
         /* Form Section */
-        .form-section {
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
+        .form-section { padding: 1.5rem; margin-bottom: 1.5rem; transition: all 0.4s ease; position: relative; z-index: 10; }
+        .input-group { display: flex; flex-direction: column; gap: 1rem; }
+        .form-buttons { display: flex; gap: 1rem; }
+        .input-field, .textarea-field, .action-btn, select { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.75rem 1rem; color: var(--text-color); font-family: inherit; font-size: 1rem; transition: all 0.3s ease; -webkit-appearance: none; appearance: none; }
+        select { background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); background-repeat: no-repeat; background-position-x: 98%; background-position-y: 50%; }
+        .action-btn { cursor: pointer; text-align: center; }
+        .input-field::placeholder, .textarea-field::placeholder { color: var(--text-muted-color); }
+        .input-field:focus, .textarea-field:focus, select:focus { outline: none; border-color: var(--primary-glow); box-shadow: 0 0 15px -2px var(--primary-glow); }
+        .textarea-field { resize: vertical; min-height: 100px; }
+        .save-btn { background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow)); background-size: 200% auto; color: white; font-weight: 600; border: none; flex-grow: 1; }
+        .save-btn:hover { background-position: right center; transform: scale(1.03); box-shadow: 0 0 20px -5px var(--primary-glow); }
+        #cancel-edit-btn { background-color: rgba(255, 255, 255, 0.1); font-weight: 500; display: none; }
+        #cancel-edit-btn:hover { background-color: rgba(255, 255, 255, 0.2); }
         
-        .input-field, .textarea-field {
-            width: 100%;
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--glass-border);
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            color: var(--text-color);
-            font-family: inherit;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .input-field::placeholder, .textarea-field::placeholder {
-            color: var(--text-muted-color);
-        }
-
-        .input-field:focus, .textarea-field:focus {
-            outline: none;
-            border-color: var(--primary-glow);
-            box-shadow: 0 0 15px -2px var(--primary-glow);
-        }
+        /* Reminder UI */
+        .reminder-group { display: flex; gap: 1rem; align-items: center; }
+        #set-reminder-btn { background: none; border: none; font-size: 1.2rem; color: var(--text-muted-color); cursor: pointer; transition: color 0.3s ease; }
+        #set-reminder-btn:hover, #set-reminder-btn.active { color: var(--primary-glow); }
+        #reminder-input { flex-grow: 1; display: none; }
+        #clear-reminder-btn { background: none; border: none; font-size: 1.2rem; color: var(--danger-glow); cursor: pointer; display: none; }
         
-        .textarea-field {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .save-btn {
-            background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
-            background-size: 200% auto;
-            color: white;
-            font-weight: 600;
-            font-size: 1rem;
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem;
-            cursor: pointer;
-            transition: all 0.4s ease;
-        }
-
-        .save-btn:hover {
-            background-position: right center;
-            transform: scale(1.03);
-            box-shadow: 0 0 20px -5px var(--primary-glow);
-        }
-
         /* Filter Section */
-        #filter-input {
-            margin-bottom: 2rem;
-            text-align: center;
-        }
+        #filter-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
 
         /* Notes Grid */
-        #notes-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-            perspective: 1500px;
-        }
-
-        .note-card {
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.5s ease;
-            position: relative;
-        }
-
-        .note-card:hover {
-            transform: rotateY(10deg) rotateX(5deg) scale(1.05);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.5), 0 0 20px var(--secondary-glow);
-        }
+        #notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; perspective: 1500px; transition: all 0.4s ease; }
+        .note-card { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.5s ease, border-color 0.4s ease; position: relative; }
+        .note-card.pinned { border-color: var(--pin-glow); box-shadow: 0 0 20px -5px var(--pin-glow), var(--card-shadow); }
+        .note-card.in-trash { opacity: 0.7; filter: grayscale(80%); }
+        .note-card:hover { transform: rotateY(10deg) rotateX(5deg) scale(1.05); box-shadow: 0 15px 40px rgba(0,0,0,0.5), 0 0 20px var(--secondary-glow); }
+        .note-card.pinned:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.5), 0 0 25px var(--pin-glow); }
+        .note-card .card-buttons { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; opacity: 0.5; transition: opacity 0.3s ease; }
+        .note-card:hover .card-buttons { opacity: 1; }
+        .card-btn { width: 30px; height: 30px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 50%; color: var(--text-muted-color); font-size: 1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; }
+        .pin-btn.active { color: var(--pin-glow); text-shadow: 0 0 8px var(--pin-glow); }
+        .pin-btn:hover { background-color: var(--pin-glow); color: var(--bg-color); transform: scale(1.1); }
+        .edit-btn:hover, .restore-btn:hover { background: var(--secondary-glow); color: var(--bg-color); transform: scale(1.1); }
+        .delete-btn:hover { background: var(--danger-glow); color: white; transform: scale(1.1); }
+        .note-topic { font-size: 1.25rem; font-weight: 600; color: #fff; padding-bottom: 0.5rem; border-bottom: 1px solid var(--glass-border); padding-right: 110px; }
+        .note-content { font-size: 1rem; line-height: 1.6; flex-grow: 1; white-space: pre-wrap; word-wrap: break-word; }
+        .note-footer { font-size: 0.8rem; color: var(--text-muted-color); text-align: right; border-top: 1px solid var(--glass-border); padding-top: 0.75rem; margin-top: auto; display: flex; justify-content: space-between; align-items: center; }
+        .reminder-display { display: flex; align-items: center; gap: 0.5rem; }
+        .reminder-display.due { color: var(--primary-glow); text-shadow: 0 0 5px var(--primary-glow); }
         
-        .note-card .card-buttons {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            gap: 8px;
-            opacity: 0.5;
-            transition: opacity 0.3s ease;
-        }
-        
-        .note-card:hover .card-buttons {
-            opacity: 1;
-        }
-
-        .card-btn {
-            width: 30px;
-            height: 30px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--glass-border);
-            border-radius: 50%;
-            color: var(--text-muted-color);
-            font-size: 1rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .edit-btn:hover {
-            background: var(--secondary-glow);
-            color: var(--bg-color);
-            transform: scale(1.1);
-        }
-        
-        .delete-btn:hover {
-            background: var(--danger-glow);
-            color: white;
-            transform: scale(1.1);
-        }
-
-        .note-topic {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #fff;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid var(--glass-border);
-            padding-right: 70px; /* Space for buttons */
-        }
-
-        .note-content {
-            font-size: 1rem;
-            line-height: 1.6;
-            flex-grow: 1;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-        
-        .note-footer {
-            font-size: 0.8rem;
-            color: var(--text-muted-color);
-            text-align: right;
-            border-top: 1px solid var(--glass-border);
-            padding-top: 0.75rem;
-            margin-top: auto;
-        }
-
         /* Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .modal-overlay.visible { opacity: 1; pointer-events: auto; }
+        .modal-box { padding: 2rem; max-width: 500px; width: 90%; text-align: center; transform: scale(0.9); transition: transform 0.3s ease; }
+        .modal-overlay.visible .modal-box { transform: scale(1); }
+        .modal-box h2 { margin-bottom: 1.5rem; text-shadow: 0 0 8px var(--primary-glow); }
+        .modal-box p { margin-bottom: 1.5rem; font-size: 1.1rem; line-height: 1.5; }
+        .modal-buttons { display: flex; justify-content: center; gap: 1rem; }
+        .modal-btn { padding: 0.6rem 1.2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .modal-confirm-btn { background-color: var(--danger-glow); color: white; }
+        .modal-confirm-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px var(--danger-glow); }
+        .modal-close-btn { background-color: var(--glass-border); color: var(--text-color); }
+        .modal-close-btn:hover { background-color: rgba(255,255,255,0.2); }
         
-        .modal-overlay.visible {
-            opacity: 1;
-            pointer-events: auto;
-        }
+        /* Analytics & Settings Modal Content */
+        .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; text-align: left; margin-bottom: 2rem; }
+        .analytics-item { background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; }
+        .analytics-item .count { font-size: 2rem; font-weight: 700; }
+        .theme-buttons { display: flex; justify-content: center; gap: 1rem; }
+        .theme-btn { padding: 0.75rem 1.5rem; }
 
-        .modal-box {
-            padding: 2rem;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
-        }
+        /* Focus Mode */
+        body.focus-active .container > *:not(.form-section):not(.header-controls) { opacity: 0; filter: blur(5px); pointer-events: none; }
+        body.focus-active .form-section { transform: scale(1.03); box-shadow: 0 10px 50px rgba(0,0,0,0.5), 0 0 40px var(--primary-glow); }
         
-        .modal-overlay.visible .modal-box {
-            transform: scale(1);
-        }
-
-        .modal-box p {
-            margin-bottom: 1.5rem;
-            font-size: 1.1rem;
-            line-height: 1.5;
-        }
-
-        .modal-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-        }
-
-        .modal-btn {
-            padding: 0.6rem 1.2rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        #modal-confirm-btn {
-             background-color: var(--danger-glow);
-             color: white;
-        }
-        
-        #modal-confirm-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px var(--danger-glow);
-        }
-        
-        #modal-cancel-btn {
-            background-color: var(--glass-border);
-            color: var(--text-color);
-        }
-        #modal-cancel-btn:hover {
-            background-color: rgba(255,255,255,0.2);
-        }
-        
-        
-        /* Responsive design */
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
-            }
-            .container {
-                padding: 1rem;
-            }
-            .made-by {
-                top: 0.5rem;
-                right: 1rem;
-                font-size: 0.8rem;
-                transform: perspective(500px) rotateY(-5deg);
-            }
-            #notes-grid {
-                grid-template-columns: 1fr;
-            }
-            .note-card:hover {
-                 transform: scale(1.03);
-            }
-        }
+        /* Responsive */
+        @media (max-width: 768px) { .container { padding: 1rem; } #filter-controls {grid-template-columns: 1fr;} }
     </style>
 </head>
 <body>
+    <!-- This script runs immediately to prevent a flash of the wrong theme -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('glow-notes-theme') || 'synthwave'; // Default to synthwave
+            if (savedTheme && savedTheme !== 'default') {
+                document.body.className = `theme-${savedTheme}`;
+            }
+        })();
+    </script>
 
     <div class="container">
-        <div class="made-by">Made By Muhammad Faisal Ali 💗</div>
+        <div class="made-by">Made By Faisal Ali 💗</div>
         <h1>GlowNotes</h1>
         <p class="subtitle">Your thoughts, in glass & glow.</p>
 
-        <!-- Note Creation/Editing Form -->
+        <div class="header-controls">
+            <button id="view-trash-btn" class="header-btn" title="View Trash">🗑️</button>
+            <div class="focus-switch">
+                <label for="focus-mode-toggle">Focus Mode</label>
+                <label class="switch"><input type="checkbox" id="focus-mode-toggle"><span class="slider"></span></label>
+            </div>
+            <button id="settings-btn" class="header-btn" title="Settings">⚙️</button>
+        </div>
+
+        <div id="filter-controls" class="glass">
+            <input type="search" id="filter-input" class="input-field" placeholder="🔍 Search notes...">
+            <select id="date-filter" class="input-field">
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+            </select>
+            <select id="property-filter" class="input-field">
+                 <option value="all">All Properties</option>
+                 <option value="pinned">Pinned</option>
+                 <option value="reminder">With Reminder</option>
+            </select>
+        </div>
+        
+        <!-- Form is now placed below filters -->
         <section class="form-section glass">
             <input type="hidden" id="edit-note-id">
             <div class="input-group">
                 <input type="text" id="note-topic" class="input-field" placeholder="Note Topic / Title...">
                 <textarea id="note-content" class="textarea-field" placeholder="Write your note here..."></textarea>
-                <button id="save-note-btn" class="save-btn">Save Note</button>
+                <div class="reminder-group">
+                    <button id="set-reminder-btn" title="Set Reminder">⏰</button>
+                    <input type="datetime-local" id="reminder-input" class="input-field">
+                    <button id="clear-reminder-btn" title="Clear Reminder">&times;</button>
+                </div>
+                <div class="form-buttons">
+                    <button id="save-note-btn" class="action-btn save-btn">Save Note</button>
+                    <button id="cancel-edit-btn" class="action-btn">Cancel</button>
+                </div>
             </div>
         </section>
 
-        <!-- Filter / Search Input -->
-        <input type="search" id="filter-input" class="input-field glass" placeholder="🔍 Search notes by topic or content...">
-
-        <!-- Grid to display notes -->
         <section id="notes-grid"></section>
     </div>
 
-    <!-- Modal for Confirmations -->
-    <div id="confirmation-modal" class="modal-overlay">
-        <div class="modal-box glass">
-            <p id="modal-text">Are you sure?</p>
-            <div class="modal-buttons">
-                <button id="modal-cancel-btn" class="modal-btn">Cancel</button>
-                <button id="modal-confirm-btn" class="modal-btn">Confirm</button>
-            </div>
-        </div>
-    </div>
+    <!-- Generic Modal -->
+    <div id="modal-container" class="modal-overlay"></div>
 
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Element selections
-            const noteTopicInput = document.getElementById('note-topic');
-            const noteContentInput = document.getElementById('note-content');
-            const saveNoteBtn = document.getElementById('save-note-btn');
-            const notesGrid = document.getElementById('notes-grid');
-            const filterInput = document.getElementById('filter-input');
-            const editNoteIdInput = document.getElementById('edit-note-id');
-            const modal = document.getElementById('confirmation-modal');
-            const modalText = document.getElementById('modal-text');
-            const modalConfirmBtn = document.getElementById('modal-confirm-btn');
-            const modalCancelBtn = document.getElementById('modal-cancel-btn');
-
-            // --- MODAL FUNCTIONS ---
-            let confirmCallback = null;
-
-            const showModal = (message, onConfirm) => {
-                modalText.textContent = message;
-                confirmCallback = onConfirm;
-                modal.classList.add('visible');
+            
+            // --- ELEMENT SELECTIONS ---
+            const elements = {
+                body: document.body,
+                noteTopicInput: document.getElementById('note-topic'), noteContentInput: document.getElementById('note-content'),
+                saveNoteBtn: document.getElementById('save-note-btn'), cancelEditBtn: document.getElementById('cancel-edit-btn'),
+                notesGrid: document.getElementById('notes-grid'), editNoteIdInput: document.getElementById('edit-note-id'),
+                modalContainer: document.getElementById('modal-container'), viewTrashBtn: document.getElementById('view-trash-btn'),
+                focusModeToggle: document.getElementById('focus-mode-toggle'), setReminderBtn: document.getElementById('set-reminder-btn'),
+                reminderInput: document.getElementById('reminder-input'), clearReminderBtn: document.getElementById('clear-reminder-btn'),
+                settingsBtn: document.getElementById('settings-btn'),
+                filterInput: document.getElementById('filter-input'), dateFilter: document.getElementById('date-filter'),
+                propertyFilter: document.getElementById('property-filter')
             };
 
-            const hideModal = () => {
-                modal.classList.remove('visible');
-                confirmCallback = null;
+            let state = { currentView: 'notes' };
+            
+            // --- MODAL FACTORY ---
+            const showModal = (content, buttons) => {
+                elements.modalContainer.innerHTML = `<div class="modal-box glass">${content}</div>`;
+                if(buttons) {
+                    const buttonContainer = document.createElement('div');
+                    buttonContainer.className = 'modal-buttons';
+                    buttonContainer.innerHTML = buttons;
+                    elements.modalContainer.querySelector('.modal-box').appendChild(buttonContainer);
+                }
+                elements.modalContainer.classList.add('visible');
             };
-            
-            modalConfirmBtn.addEventListener('click', () => {
-                if (confirmCallback) {
-                    confirmCallback();
-                }
-                hideModal();
-            });
-            
-            modalCancelBtn.addEventListener('click', hideModal);
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    hideModal();
-                }
+            const hideModal = () => elements.modalContainer.classList.remove('visible');
+            elements.modalContainer.addEventListener('click', (e) => {
+                if (e.target === elements.modalContainer || e.target.classList.contains('modal-close-btn')) hideModal();
             });
 
-            // --- LOCAL STORAGE FUNCTIONS ---
-            const getNotes = () => {
-                const notes = localStorage.getItem('glow-notes');
-                return notes ? JSON.parse(notes) : [];
-            };
-            const saveNotes = (notes) => {
-                localStorage.setItem('glow-notes', JSON.stringify(notes));
-            };
-            
-            // --- DATE FORMATTING ---
-            const formatTimestamp = (timestamp) => {
-                const date = new Date(timestamp);
-                const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true };
-                return date.toLocaleString('en-US', options);
-            };
+            // --- DATA & UTILITY ---
+            const getNotes = () => JSON.parse(localStorage.getItem('glow-notes') || '[]');
+            const saveNotes = (notes) => { localStorage.setItem('glow-notes', JSON.stringify(notes)); };
+            const formatTimestamp = (ts) => new Date(ts).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const escapeHTML = (str) => { const p = document.createElement('p'); p.textContent = str; return p.innerHTML; };
 
-            // --- NOTE RENDERING ---
-            const renderNotes = (notesToRender = getNotes()) => {
-                notesGrid.innerHTML = '';
-                const sortedNotes = notesToRender.sort((a, b) => b.id - a.id);
-                sortedNotes.forEach(note => {
-                    const noteCard = document.createElement('div');
-                    noteCard.className = 'note-card glass';
-                    noteCard.dataset.id = note.id;
+            // --- RENDERING ---
+            const render = () => {
+                const notes = getNotes();
+                const searchTerm = elements.filterInput.value.toLowerCase();
+                const dateFilterValue = elements.dateFilter.value;
+                const propertyFilterValue = elements.propertyFilter.value;
+                
+                let notesToRender;
+                if (state.currentView === 'trash') {
+                    notesToRender = notes.filter(n => n.inTrash);
+                    elements.viewTrashBtn.classList.add('active'); elements.viewTrashBtn.textContent = '📚'; elements.viewTrashBtn.title = 'View Notes';
+                } else {
+                    notesToRender = notes.filter(n => !n.inTrash);
+                    elements.viewTrashBtn.classList.remove('active'); elements.viewTrashBtn.textContent = '🗑️'; elements.viewTrashBtn.title = 'View Trash';
+                }
 
-                    noteCard.innerHTML = `
-                        <div class="card-buttons">
-                            <button class="card-btn edit-btn" title="Edit Note">✎</button>
-                            <button class="card-btn delete-btn" title="Delete Note">&times;</button>
-                        </div>
-                        <h3 class="note-topic">${escapeHTML(note.topic)}</h3>
-                        <p class="note-content">${escapeHTML(note.content)}</p>
-                        <div class="note-footer">${formatTimestamp(note.id)}</div>
-                    `;
+                // Apply filters
+                if (searchTerm) notesToRender = notesToRender.filter(n => n.topic.toLowerCase().includes(searchTerm) || n.content.toLowerCase().includes(searchTerm));
+                if (propertyFilterValue === 'pinned') notesToRender = notesToRender.filter(n => n.pinned);
+                if (propertyFilterValue === 'reminder') notesToRender = notesToRender.filter(n => n.reminder);
 
-                    // Event listeners for card buttons
-                    noteCard.querySelector('.delete-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        handleDeleteNote(note.id);
+                if (dateFilterValue !== 'all') {
+                    const now = new Date();
+                    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                    notesToRender = notesToRender.filter(n => {
+                        const noteTime = n.id;
+                        if (dateFilterValue === 'today') return noteTime >= today;
+                        if (dateFilterValue === 'week') {
+                            const weekStart = today - (now.getDay() * 86400000);
+                            return noteTime >= weekStart;
+                        }
+                        if (dateFilterValue === 'month') {
+                             const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+                             return noteTime >= monthStart;
+                        }
+                        return true;
                     });
-                    
-                    noteCard.querySelector('.edit-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        handleStartEdit(note);
-                    });
-
-                    notesGrid.appendChild(noteCard);
-                });
-            };
-            
-            // --- UTILITY FUNCTIONS ---
-            const escapeHTML = (str) => {
-                 const p = document.createElement('p');
-                 p.appendChild(document.createTextNode(str));
-                 return p.innerHTML;
+                }
+                
+                elements.notesGrid.innerHTML = '';
+                const sortedNotes = notesToRender.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.id - a.id);
+                sortedNotes.forEach(note => createNoteCard(note));
             };
 
+            const createNoteCard = (note) => {
+                const noteCard = document.createElement('div');
+                noteCard.className = `note-card glass ${note.inTrash ? 'in-trash' : ''} ${note.pinned ? 'pinned' : ''}`;
+                noteCard.dataset.id = note.id;
+                let buttonsHTML = note.inTrash
+                    ? `<button class="card-btn restore-btn" title="Restore Note">♻️</button><button class="card-btn delete-btn modal-confirm-btn" title="Delete Forever">&times;</button>`
+                    : `<button class="card-btn pin-btn ${note.pinned ? 'active' : ''}" title="Pin Note">📌</button><button class="card-btn edit-btn" title="Edit Note">✎</button><button class="card-btn delete-btn" title="Move to Trash">🗑️</button>`;
+                let reminderIconHTML = (note.reminder && !note.inTrash) ? `<span class="reminder-display ${new Date(note.reminder).getTime() < Date.now() ? 'due' : ''}" title="Reminder: ${formatTimestamp(note.reminder)}">⏰</span>` : '';
+                const displayTimestamp = note.reminder && !note.inTrash ? note.reminder : note.id;
+                noteCard.innerHTML = `<div class="card-buttons">${buttonsHTML}</div><h3 class="note-topic">${escapeHTML(note.topic)}</h3><p class="note-content">${escapeHTML(note.content)}</p><div class="note-footer">${reminderIconHTML}<span>${formatTimestamp(displayTimestamp)}</span></div>`;
+                
+                if (note.inTrash) {
+                    noteCard.querySelector('.restore-btn').onclick = e => { e.stopPropagation(); handleRestoreNote(note.id); };
+                    noteCard.querySelector('.delete-btn').onclick = e => { e.stopPropagation(); handlePermanentDelete(note.id); };
+                } else {
+                    noteCard.querySelector('.pin-btn').onclick = e => { e.stopPropagation(); handleTogglePin(note.id); };
+                    noteCard.querySelector('.edit-btn').onclick = e => { e.stopPropagation(); handleStartEdit(note); };
+                    noteCard.querySelector('.delete-btn').onclick = e => { e.stopPropagation(); handleMoveToTrash(note.id); };
+                }
+                elements.notesGrid.appendChild(noteCard);
+            };
+
+            // --- FORM & NOTE ACTIONS ---
             const resetForm = () => {
-                noteTopicInput.value = '';
-                noteContentInput.value = '';
-                editNoteIdInput.value = '';
-                saveNoteBtn.textContent = 'Save Note';
-                noteTopicInput.focus();
+                elements.noteTopicInput.value = ''; elements.noteContentInput.value = ''; elements.editNoteIdInput.value = '';
+                elements.saveNoteBtn.textContent = 'Save Note'; elements.cancelEditBtn.style.display = 'none';
+                resetReminderUI(); elements.noteTopicInput.focus();
             };
 
-            // --- EVENT HANDLERS ---
             const handleSaveOrUpdateNote = () => {
-                const topic = noteTopicInput.value.trim();
-                const content = noteContentInput.value.trim();
-                const noteIdToEdit = editNoteIdInput.value;
-
-                if (!topic || !content) {
-                    showModal('Please provide both a topic and content for your note.', () => {});
-                    return;
-                }
-
+                const topic = elements.noteTopicInput.value.trim(); const content = elements.noteContentInput.value.trim();
+                const noteIdToEdit = elements.editNoteIdInput.value; const reminderTime = elements.reminderInput.value ? new Date(elements.reminderInput.value).getTime() : null;
+                if (!topic || !content) { showModal(`<p>Please provide both a topic and content.</p>`, `<button class="modal-btn modal-close-btn">OK</button>`); return; }
                 let notes = getNotes();
-
-                if (noteIdToEdit) { // This is an update
-                    notes = notes.map(note => 
-                        note.id == noteIdToEdit ? { ...note, topic, content, lastEdited: Date.now() } : note
-                    );
-                } else { // This is a new note
-                    const newNote = { id: Date.now(), topic, content };
-                    notes.push(newNote);
+                if (noteIdToEdit) {
+                    notes = notes.map(note => note.id == noteIdToEdit ? { ...note, topic, content, reminder: reminderTime, reminderFired: reminderTime ? false : note.reminderFired } : note);
+                } else {
+                    notes.push({ id: Date.now(), topic, content, pinned: false, inTrash: false, reminder: reminderTime, reminderFired: false });
                 }
-
-                saveNotes(notes);
-                resetForm();
-                renderNotes();
-            };
-
-            const handleDeleteNote = (id) => {
-                showModal('Are you sure you want to delete this note? This action cannot be undone.', () => {
-                    let notes = getNotes();
-                    notes = notes.filter(note => note.id !== id);
-                    saveNotes(notes);
-                    // If deleting the note currently being edited, reset the form
-                    if (id == editNoteIdInput.value) {
-                        resetForm();
-                    }
-                    renderNotes();
-                });
+                saveNotes(notes); resetForm(); render();
             };
 
             const handleStartEdit = (note) => {
-                noteTopicInput.value = note.topic;
-                noteContentInput.value = note.content;
-                editNoteIdInput.value = note.id;
-                saveNoteBtn.textContent = 'Update Note';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                noteTopicInput.focus();
+                elements.noteTopicInput.value = note.topic; elements.noteContentInput.value = note.content;
+                elements.editNoteIdInput.value = note.id;
+                elements.saveNoteBtn.textContent = 'Update Note'; elements.cancelEditBtn.style.display = 'block';
+                if(note.reminder) {
+                    const d = new Date(note.reminder); const isoString = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString();
+                    elements.reminderInput.value = isoString.slice(0, 16); elements.reminderInput.style.display = 'block';
+                    elements.clearReminderBtn.style.display = 'block'; elements.setReminderBtn.classList.add('active');
+                } else { resetReminderUI(); }
+                window.scrollTo({ top: 0, behavior: 'smooth' }); elements.noteTopicInput.focus();
             };
             
-            const handleFilterNotes = () => {
-                const searchTerm = filterInput.value.toLowerCase();
-                const allNotes = getNotes();
-                const filteredNotes = allNotes.filter(note => 
-                    note.topic.toLowerCase().includes(searchTerm) || 
-                    note.content.toLowerCase().includes(searchTerm)
-                );
-                renderNotes(filteredNotes);
+            const handleTogglePin = (id) => { let notes = getNotes(); notes.forEach(n => { if(n.id === id) n.pinned = !n.pinned }); saveNotes(notes); render(); };
+            
+            const handleMoveToTrash = (id) => {
+                showModal('<p>Move this note to trash?</p>', `<button class="modal-btn modal-close-btn">Cancel</button><button class="modal-btn modal-confirm-btn" id="confirm-trash-btn">Trash</button>`);
+                document.getElementById('confirm-trash-btn').onclick = () => {
+                    let notes = getNotes();
+                    notes.forEach(n => { if(n.id === id) n.inTrash = true });
+                    saveNotes(notes);
+                    render();
+                    hideModal();
+                };
+            };
+            
+            const handleRestoreNote = (id) => { let notes = getNotes(); notes.forEach(n => { if(n.id === id) n.inTrash = false }); saveNotes(notes); render(); };
+
+            const handlePermanentDelete = (id) => {
+                showModal('<p>Permanently delete? This cannot be undone.</p>', `<button class="modal-btn modal-close-btn">Cancel</button><button class="modal-btn modal-confirm-btn" id="confirm-delete-btn">Delete</button>`);
+                document.getElementById('confirm-delete-btn').onclick = () => {
+                    let notes = getNotes();
+                    notes = notes.filter(n => n.id !== id);
+                    saveNotes(notes);
+                    render();
+                    hideModal();
+                };
+            };
+            
+            // --- FEATURE HANDLERS ---
+            elements.viewTrashBtn.onclick = () => { state.currentView = state.currentView === 'notes' ? 'trash' : 'notes'; render(); };
+            elements.focusModeToggle.onchange = () => elements.body.classList.toggle('focus-active', elements.focusModeToggle.checked);
+            const resetReminderUI = () => { elements.reminderInput.value = ''; elements.reminderInput.style.display = 'none'; elements.clearReminderBtn.style.display = 'none'; elements.setReminderBtn.classList.remove('active'); };
+            elements.setReminderBtn.onclick = () => {
+                elements.reminderInput.style.display = 'block'; elements.clearReminderBtn.style.display = 'block'; elements.setReminderBtn.classList.add('active');
+                if (!elements.reminderInput.value) {
+                    const now = new Date(); const tzOffset = now.getTimezoneOffset() * 60000;
+                    elements.reminderInput.value = new Date(now - tzOffset).toISOString().slice(0, 16);
+                }
+            };
+            elements.clearReminderBtn.onclick = resetReminderUI;
+            
+            // Settings and Analytics
+            elements.settingsBtn.onclick = () => {
+                const notes = getNotes();
+                const totalActive = notes.filter(n => !n.inTrash).length;
+                const totalPinned = notes.filter(n => !n.inTrash && n.pinned).length;
+                const totalTrash = notes.filter(n => n.inTrash).length;
+                const totalReminders = notes.filter(n => !n.inTrash && n.reminder).length;
+                
+                const analyticsHTML = `
+                    <h2>Analytics & Settings</h2>
+                    <div class="analytics-grid">
+                        <div class="analytics-item"><div>Active Notes</div><div class="count">${totalActive}</div></div>
+                        <div class="analytics-item"><div>Pinned Notes</div><div class="count">${totalPinned}</div></div>
+                        <div class="analytics-item"><div>Notes in Trash</div><div class="count">${totalTrash}</div></div>
+                        <div class="analytics-item"><div>Active Reminders</div><div class="count">${totalReminders}</div></div>
+                    </div>
+                    <h3>Themes</h3>
+                    <div class="theme-buttons">
+                        <button class="action-btn theme-btn" data-theme="default">Glow</button>
+                        <button class="action-btn theme-btn" data-theme="light">Light</button>
+                        <button class="action-btn theme-btn" data-theme="synthwave">Synthwave</button>
+                    </div>`;
+                showModal(analyticsHTML, `<button class="modal-btn modal-close-btn">Close</button>`);
+                document.querySelectorAll('.theme-btn').forEach(btn => btn.onclick = (e) => switchTheme(e.target.dataset.theme));
+            };
+            
+            const switchTheme = (theme) => {
+                elements.body.className = theme === 'default' ? '' : `theme-${theme}`;
+                localStorage.setItem('glow-notes-theme', theme);
+                // hideModal is not always needed, but good to have if theme is changed from modal
+                if(elements.modalContainer.classList.contains('visible')) hideModal();
             };
 
+            // --- IN-PAGE REMINDER CHECKER ---
+            const checkReminders = () => {
+                const notes = getNotes();
+                const now = Date.now();
+                let notesUpdated = false;
+                notes.forEach(note => {
+                    if (!note.inTrash && note.reminder && !note.reminderFired && new Date(note.reminder).getTime() <= now) {
+                        if ('Notification' in window && Notification.permission === 'granted') {
+                             new Notification('GlowNotes Reminder', { body: note.topic, icon: 'https://placehold.co/128x128/8A2BE2/FFFFFF?text=GN' });
+                        }
+                        note.reminderFired = true;
+                        notesUpdated = true;
+                    }
+                });
+                if(notesUpdated) saveNotes(notes);
+            };
 
             // --- INITIALIZATION ---
-            saveNoteBtn.addEventListener('click', handleSaveOrUpdateNote);
-            filterInput.addEventListener('input', handleFilterNotes);
+            [elements.filterInput, elements.dateFilter, elements.propertyFilter].forEach(el => el.oninput = render);
+            elements.saveNoteBtn.onclick = handleSaveOrUpdateNote;
+            elements.cancelEditBtn.onclick = resetForm;
             
-            // Initial render on page load
-            renderNotes();
+            if ('Notification' in window && Notification.permission !== 'granted') Notification.requestPermission();
+            
+            // No longer load theme here, it's done in the head script
+            // loadTheme();
+            
+            // Check for theme at start, without this, the initial load is themeless until a switch
+            const initialTheme = localStorage.getItem('glow-notes-theme') || 'synthwave';
+            if (initialTheme && initialTheme !== 'default') {
+                elements.body.classList.add(`theme-${initialTheme}`);
+            }
+
+            setInterval(checkReminders, 15000); // Check every 15 seconds
+            render();
         });
     </script>
 </body>
