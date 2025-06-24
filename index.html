@@ -10,16 +10,16 @@
     <style>
         /* CSS Reset and Basic Setup */
         :root {
-            --bg-color: #1a103c;
-            --primary-glow: rgba(255, 0, 110, 0.7);
-            --secondary-glow: rgba(0, 229, 255, 0.7);
+            --bg-color: #02020a;
+            --primary-glow: rgba(0, 255, 255, 0.7); /* Neon Cyan */
+            --secondary-glow: rgba(255, 0, 255, 0.7); /* Neon Magenta */
             --danger-glow: rgba(255, 59, 48, 0.7);
-            --pin-glow: rgba(110, 255, 128, 0.8);
-            --glass-bg: rgba(42, 29, 90, 0.5);
-            --glass-border: rgba(255, 0, 110, 0.3);
+            --pin-glow: rgba(50, 255, 50, 0.8); /* Neon Green */
+            --glass-bg: rgba(255, 255, 255, 0.03); /* More transparent */
+            --glass-border: rgba(255, 255, 255, 0.08); /* More subtle */
             --text-color: #f0f0f0;
-            --text-muted-color: #9a8cce;
-            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --text-muted-color: rgba(230, 230, 255, 0.6);
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -38,15 +38,17 @@
             background: linear-gradient(135deg, var(--primary-glow), var(--bg-color), var(--secondary-glow));
             background-size: 300% 300%;
             animation: gradient-animation 15s ease infinite;
-            z-index: -1; filter: blur(100px); opacity: 0.6;
+            z-index: -1; filter: blur(120px); opacity: 0.7;
             transition: opacity 0.4s ease;
         }
 
+        @keyframes gradient-animation { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        
         /* Main container and typography */
         .container { max-width: 1200px; margin: 0 auto; padding: 2rem; position: relative; z-index: 1; transition: opacity 0.4s ease; }
         h1 { font-size: 2.5rem; font-weight: 700; text-align: center; margin-bottom: 0.5rem; text-shadow: 0 0 15px var(--primary-glow); }
         .subtitle { text-align: center; color: var(--text-muted-color); margin-bottom: 1rem; }
-        .glass { background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 16px; border: 1px solid var(--glass-border); box-shadow: var(--card-shadow); transition: background 0.4s, border 0.4s; }
+        .glass { background: var(--glass-bg); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 16px; border: 1px solid var(--glass-border); box-shadow: var(--card-shadow); transition: background 0.4s, border 0.4s; }
 
         /* --- Header controls --- */
         .header-controls { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; transition: all 0.4s ease; }
@@ -155,8 +157,8 @@
         /* Developer Credits */
         #developer-credits {
             position: fixed;
-            top: 1.5rem; /* Changed from bottom */
-            right: 1.5rem; /* Changed from right */
+            top: 1.5rem;
+            right: 1.5rem;
             background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
@@ -189,7 +191,7 @@
         @media (max-width: 768px) { .container { padding: 1rem; } #filter-controls, #io-controls {grid-template-columns: 1fr;} }
     </style>
 </head>
-<body class="theme-synthwave"> <!-- Default theme set here -->
+<body> <!-- No class needed here, it's set by JS -->
 
     <div class="container">
         <h1>GlowNotes</h1>
