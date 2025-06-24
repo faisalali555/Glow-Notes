@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlowNotes - The Complete App</title>
+    <title>GlowNotes - Glow Your Notes</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -46,7 +46,6 @@
         .container { max-width: 1200px; margin: 0 auto; padding: 2rem; position: relative; z-index: 1; transition: opacity 0.4s ease; }
         h1 { font-size: 2.5rem; font-weight: 700; text-align: center; margin-bottom: 0.5rem; text-shadow: 0 0 15px var(--primary-glow); }
         .subtitle { text-align: center; color: var(--text-muted-color); margin-bottom: 1rem; }
-        .made-by { position: absolute; top: 1.5rem; right: 2rem; font-size: 0.9rem; font-weight: 500; z-index: 2; transform: perspective(500px) rotateY(-10deg); color: var(--text-muted-color); }
         .glass { background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 16px; border: 1px solid var(--glass-border); box-shadow: var(--card-shadow); transition: background 0.4s, border 0.4s; }
 
         /* --- Header controls --- */
@@ -152,6 +151,39 @@
         #reader-content h1 { font-size: 3rem; text-shadow: 0 0 10px var(--primary-glow); margin-bottom: 2rem; }
         #reader-content p { font-size: 1.2rem; line-height: 1.8; white-space: pre-wrap; }
         #reader-close-btn { position: absolute; top: 2rem; right: 2rem; font-size: 2rem; background: none; border: none; color: var(--text-muted-color); cursor: pointer; }
+        
+        /* Developer Credits */
+        #developer-credits {
+            position: fixed;
+            top: 1.5rem; /* Changed from bottom */
+            right: 1.5rem; /* Changed from right */
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            font-size: 0.875rem;
+            color: var(--secondary-glow);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            transition: all 0.3s ease;
+            z-index: 100;
+            text-shadow: 0 0 8px var(--secondary-glow);
+        }
+
+        #developer-credits:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0, 229, 255, 0.2), 0 8px 10px -6px rgba(0, 229, 255, 0.2);
+        }
+
+        #developer-credits svg {
+            height: 1rem;
+            width: 1rem;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 0.25rem;
+            fill: currentColor;
+        }
+
 
         /* Responsive */
         @media (max-width: 768px) { .container { padding: 1rem; } #filter-controls, #io-controls {grid-template-columns: 1fr;} }
@@ -160,7 +192,6 @@
 <body class="theme-synthwave"> <!-- Default theme set here -->
 
     <div class="container">
-        <div class="made-by">Made By Muhammad Faisal Ali 💗</div>
         <h1>GlowNotes</h1>
         <p class="subtitle">Your thoughts, in glass & glow.</p>
 
@@ -221,6 +252,14 @@
     <div id="reader-view">
         <button id="reader-close-btn">&times;</button>
         <div id="reader-content"></div>
+    </div>
+    
+    <!-- Developer Credits -->
+    <div id="developer-credits"> 
+         Developed by <strong>Muhammad Faisal Ali 💗</strong> 
+         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block ml-1 text-teal-400" viewBox="0 0 20 20" fill="currentColor"> 
+             <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.48 5.088a.75.75 0 01.087 1.05l-3.25 4.5a.75.75 0 01-1.137.087L5.75 10.75a.75.75 0 111.06-1.06l1.72 1.72 2.7-3.75a.75.75 0 011.05-.087z" clip-rule="evenodd" /> 
+         </svg>
     </div>
 
 
@@ -560,6 +599,7 @@
                         if (note.loop) {
                              note.reminder = Date.now() + note.loop.interval;
                         } else {
+                             note.reminder = null; // Clear one-time reminder
                              note.reminderFired = true;
                         }
                         notesUpdated = true;
