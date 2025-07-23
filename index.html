@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlowNotes - Glow Your Notes</title>
+    <title>GlowNotes - White Glow Theme</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* CSS Reset and Basic Setup */
         :root {
-            --bg-color: #02020a;
-            --primary-glow: rgba(0, 255, 255, 0.7); /* Neon Cyan */
-            --secondary-glow: rgba(255, 0, 255, 0.7); /* Neon Magenta */
+            --bg-color: #f0f2f5; /* Light grey background */
+            --primary-glow: rgba(0, 122, 255, 0.6); /* Softer blue glow */
+            --secondary-glow: rgba(255, 149, 0, 0.6); /* Softer orange glow */
             --danger-glow: rgba(255, 59, 48, 0.7);
-            --pin-glow: rgba(50, 255, 50, 0.8); /* Neon Green */
-            --glass-bg: rgba(255, 255, 255, 0.03); /* More transparent */
-            --glass-border: rgba(255, 255, 255, 0.08); /* More subtle */
-            --text-color: #f0f0f0;
-            --text-muted-color: rgba(230, 230, 255, 0.6);
-            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            --pin-glow: rgba(52, 199, 89, 0.8); /* Softer green glow */
+            --glass-bg: rgba(255, 255, 255, 0.6); /* Light glass effect */
+            --glass-border: rgba(0, 0, 0, 0.08); /* Subtle dark border */
+            --text-color: #1d1d1f; /* Dark text for readability */
+            --text-muted-color: rgba(60, 60, 67, 0.6); /* Muted dark text */
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -33,22 +33,19 @@
             transition: background-color 0.4s ease, color 0.4s ease;
         }
 
+        /* Removed the animated gradient, now a static, subtle glow */
         body::before {
             content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: linear-gradient(135deg, var(--primary-glow), var(--bg-color), var(--secondary-glow));
-            background-size: 300% 300%;
-            animation: gradient-animation 15s ease infinite;
-            z-index: -1; filter: blur(120px); opacity: 0.7;
+            z-index: -1; filter: blur(120px); opacity: 0.6;
             transition: opacity 0.4s ease;
         }
-
-        @keyframes gradient-animation { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         
         /* Main container and typography */
         .container { max-width: 1200px; margin: 0 auto; padding: 2rem; position: relative; z-index: 1; transition: opacity 0.4s ease; }
-        h1 { font-size: 2.5rem; font-weight: 700; text-align: center; margin-bottom: 0.5rem; text-shadow: 0 0 15px var(--primary-glow); }
+        h1 { font-size: 2.5rem; font-weight: 700; text-align: center; margin-bottom: 0.5rem; text-shadow: 0 0 20px var(--primary-glow); }
         .subtitle { text-align: center; color: var(--text-muted-color); margin-bottom: 1rem; }
-        .glass { background: var(--glass-bg); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 16px; border: 1px solid var(--glass-border); box-shadow: var(--card-shadow); transition: background 0.4s, border 0.4s; }
+        .glass { background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid var(--glass-border); box-shadow: var(--card-shadow); transition: background 0.4s, border 0.4s; }
 
         /* --- Header controls --- */
         .header-controls { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; transition: all 0.4s ease; }
@@ -56,8 +53,8 @@
         .focus-switch { display: flex; align-items: center; gap: 0.5rem; }
         .focus-switch .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .focus-switch .switch input { opacity: 0; width: 0; height: 0; }
-        .focus-switch .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 24px; }
-        .focus-switch .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        .focus-switch .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.1); transition: .4s; border-radius: 24px; }
+        .focus-switch .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
         .focus-switch input:checked + .slider { background-color: var(--primary-glow); }
         .focus-switch input:checked + .slider:before { transform: translateX(20px); }
         
@@ -69,17 +66,17 @@
         .form-section { padding: 1.5rem; margin-bottom: 1.5rem; transition: all 0.4s ease; position: relative; z-index: 10; }
         .input-group { display: flex; flex-direction: column; gap: 1rem; }
         .form-buttons { display: flex; gap: 1rem; }
-        .input-field, .textarea-field, .action-btn, select { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.75rem 1rem; color: var(--text-color); font-family: inherit; font-size: 1rem; transition: all 0.3s ease; -webkit-appearance: none; appearance: none; }
-        select { background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); background-repeat: no-repeat; background-position-x: 98%; background-position-y: 50%; }
+        .input-field, .textarea-field, .action-btn, select { width: 100%; background: rgba(0,0,0,0.05); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.75rem 1rem; color: var(--text-color); font-family: inherit; font-size: 1rem; transition: all 0.3s ease; -webkit-appearance: none; appearance: none; }
+        select { background-image: url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); background-repeat: no-repeat; background-position-x: 98%; background-position-y: 50%; }
         .action-btn { cursor: pointer; text-align: center; }
         .action-btn:hover { border-color: var(--primary-glow); box-shadow: 0 0 10px -3px var(--primary-glow); }
         .input-field::placeholder, .textarea-field::placeholder { color: var(--text-muted-color); }
         .input-field:focus, .textarea-field:focus, select:focus { outline: none; border-color: var(--primary-glow); box-shadow: 0 0 15px -2px var(--primary-glow); }
         .textarea-field { resize: vertical; min-height: 100px; }
-        .save-btn { background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow)); background-size: 200% auto; color: white; font-weight: 600; border: none; flex-grow: 1; }
+        .save-btn { background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow)); background-size: 200% auto; color: white; font-weight: 600; border: none; flex-grow: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
         .save-btn:hover { background-position: right center; transform: scale(1.03); box-shadow: 0 0 20px -5px var(--primary-glow); }
-        #cancel-edit-btn { background-color: rgba(255, 255, 255, 0.1); font-weight: 500; display: none; }
-        #cancel-edit-btn:hover { background-color: rgba(255, 255, 255, 0.2); }
+        #cancel-edit-btn { background-color: rgba(0, 0, 0, 0.08); font-weight: 500; display: none; }
+        #cancel-edit-btn:hover { background-color: rgba(0, 0, 0, 0.12); }
         
         /* Reminder UI */
         .reminder-group { display: flex; gap: 1rem; align-items: center; }
@@ -97,25 +94,48 @@
         .note-card { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.5s ease, border-color 0.4s ease; position: relative; }
         .note-card.pinned { border-color: var(--pin-glow); box-shadow: 0 0 20px -5px var(--pin-glow), var(--card-shadow); }
         .note-card.in-trash { opacity: 0.7; filter: grayscale(80%); }
-        .note-card:hover { transform: rotateY(10deg) rotateX(5deg) scale(1.05); box-shadow: 0 15px 40px rgba(0,0,0,0.5), 0 0 20px var(--secondary-glow); }
-        .note-card.pinned:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.5), 0 0 25px var(--pin-glow); }
+        .note-card:hover { transform: translateY(-5px) scale(1.03); box-shadow: 0 15px 40px rgba(0,0,0,0.15), 0 0 20px var(--secondary-glow); }
+        .note-card.pinned:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.15), 0 0 25px var(--pin-glow); }
         .note-card .card-buttons { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; opacity: 0.5; transition: opacity 0.3s ease; }
         .note-card:hover .card-buttons { opacity: 1; }
-        .card-btn { width: 30px; height: 30px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 50%; color: var(--text-muted-color); font-size: 1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; }
+        .card-btn { width: 30px; height: 30px; background: rgba(0,0,0,0.05); border: 1px solid var(--glass-border); border-radius: 50%; color: var(--text-muted-color); font-size: 1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; }
         .pin-btn.active { color: var(--pin-glow); text-shadow: 0 0 8px var(--pin-glow); }
-        .pin-btn:hover { background-color: var(--pin-glow); color: var(--bg-color); transform: scale(1.1); }
-        .edit-btn:hover, .restore-btn:hover { background: var(--secondary-glow); color: var(--bg-color); transform: scale(1.1); }
+        .pin-btn:hover { background-color: var(--pin-glow); color: white; transform: scale(1.1); }
+        .edit-btn:hover, .restore-btn:hover { background: var(--secondary-glow); color: white; transform: scale(1.1); }
         .delete-btn:hover { background: var(--danger-glow); color: white; transform: scale(1.1); }
         .fullscreen-btn:hover, .share-btn:hover, .schedule-btn:hover { background-color: var(--text-muted-color); color: var(--bg-color); }
-        .note-topic { font-size: 1.25rem; font-weight: 600; color: #fff; padding-bottom: 0.5rem; border-bottom: 1px solid var(--glass-border); padding-right: 200px; }
-        .note-content { font-size: 1rem; line-height: 1.6; flex-grow: 1; white-space: pre-wrap; word-wrap: break-word; }
+        .note-topic { font-size: 1.25rem; font-weight: 600; color: var(--text-color); padding-bottom: 0.5rem; border-bottom: 1px solid var(--glass-border); }
+        
+        .note-content { 
+            font-size: 1rem; 
+            line-height: 1.6; 
+            flex-grow: 1; 
+            white-space: pre-wrap; 
+            word-wrap: break-word; 
+            max-height: 8rem; /* Approx 5 lines (5 * 1.6rem) */
+            overflow: hidden;
+        }
+
         .note-footer { font-size: 0.8rem; color: var(--text-muted-color); text-align: right; border-top: 1px solid var(--glass-border); padding-top: 0.75rem; margin-top: auto; display: flex; justify-content: space-between; align-items: center; }
         .reminder-display { display: flex; align-items: center; gap: 0.5rem; }
         .reminder-display.due { color: var(--primary-glow); text-shadow: 0 0 5px var(--primary-glow); }
         .loop-icon { font-size: 0.7rem; }
         
+        .read-more-btn {
+            background: transparent;
+            border: none;
+            color: var(--primary-glow);
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            width: 100%;
+            padding: 0.5rem 0 0 0;
+            margin-top: -0.5rem;
+            text-shadow: 0 0 5px var(--primary-glow);
+        }
+
         /* Modal Styles */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .modal-overlay.visible { opacity: 1; pointer-events: auto; }
         .modal-box { padding: 2rem; max-width: 500px; width: 90%; text-align: center; transform: scale(0.9); transition: transform 0.3s ease; }
         .modal-overlay.visible .modal-box { transform: scale(1); }
@@ -125,33 +145,43 @@
         .modal-btn { padding: 0.6rem 1.2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
         .modal-confirm-btn { background-color: var(--danger-glow); color: white; }
         .modal-confirm-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px var(--danger-glow); }
-        .modal-close-btn { background-color: var(--glass-border); color: var(--text-color); }
-        .modal-close-btn:hover { background-color: rgba(255,255,255,0.2); }
+        .modal-close-btn { background-color: rgba(0,0,0,0.1); color: var(--text-color); }
+        .modal-close-btn:hover { background-color: rgba(0,0,0,0.2); }
         
         #share-link-input { width: 100%; word-wrap: break-word; text-align: left; padding: 1rem; margin-bottom: 1rem; }
         
         /* Analytics & Settings Modal Content */
         .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; text-align: left; margin-bottom: 2rem; }
-        .analytics-item { background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; }
+        .analytics-item { background: rgba(0,0,0,0.05); padding: 1rem; border-radius: 8px; }
         .analytics-item .count { font-size: 2rem; font-weight: 700; }
-        #notification-status-container { margin-top: 2rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px; }
+        #notification-status-container { margin-top: 2rem; padding: 1rem; background: rgba(0,0,0,0.05); border-radius: 8px; }
         #notification-status-container p { font-size: 0.9rem; margin-top: 5px; margin-bottom: 0;}
 
         /* Custom Recurring Reminder UI */
         #custom-reminder-form { display: flex; gap: 10px; margin-top: 1rem; }
         #custom-reminder-value { width: 80px; }
 
-
         /* Focus Mode */
         body.focus-active .container > *:not(.form-section):not(.header-controls) { opacity: 0; filter: blur(5px); pointer-events: none; }
-        body.focus-active .form-section { transform: scale(1.03); box-shadow: 0 10px 50px rgba(0,0,0,0.5), 0 0 40px var(--primary-glow); }
+        body.focus-active .form-section { transform: scale(1.03); box-shadow: 0 10px 50px rgba(0,0,0,0.2), 0 0 40px var(--primary-glow); }
         
-        /* Full Screen Reader */
-        #reader-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; background: var(--bg-color); display: none; opacity: 0; transition: opacity 0.3s ease; }
+        #reader-view { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            z-index: 2000; 
+            background: var(--bg-color); 
+            display: none; 
+            opacity: 0; 
+            transition: opacity 0.3s ease; 
+            overflow-y: auto;
+        }
         #reader-view.visible { display: block; opacity: 1; }
         #reader-content { max-width: 800px; margin: 0 auto; padding: 4rem 2rem; color: var(--text-color); }
         #reader-content h1 { font-size: 3rem; text-shadow: 0 0 10px var(--primary-glow); margin-bottom: 2rem; }
-        #reader-content p { font-size: 1.2rem; line-height: 1.8; white-space: pre-wrap; }
+        #reader-content div { font-size: 1.2rem; line-height: 1.8; white-space: pre-wrap; }
         #reader-close-btn { position: absolute; top: 2rem; right: 2rem; font-size: 2rem; background: none; border: none; color: var(--text-muted-color); cursor: pointer; }
         
         /* Developer Credits */
@@ -159,22 +189,22 @@
             position: fixed;
             top: 1.5rem;
             right: 1.5rem;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(255, 255, 255, 0.4);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             font-size: 0.875rem;
-            color: var(--secondary-glow);
+            color: var(--primary-glow);
             padding: 0.5rem 1rem;
             border-radius: 9999px;
-            border: 1px solid rgba(0, 229, 255, 0.3);
+            border: 1px solid var(--primary-glow);
             transition: all 0.3s ease;
             z-index: 100;
-            text-shadow: 0 0 8px var(--secondary-glow);
+            text-shadow: 0 0 8px var(--primary-glow);
         }
 
         #developer-credits:hover {
             transform: translateY(-4px);
-            box-shadow: 0 10px 25px -5px rgba(0, 229, 255, 0.2), 0 8px 10px -6px rgba(0, 229, 255, 0.2);
+            box-shadow: 0 10px 25px -5px rgba(0, 122, 255, 0.2), 0 8px 10px -6px rgba(0, 122, 255, 0.2);
         }
 
         #developer-credits svg {
@@ -186,12 +216,11 @@
             fill: currentColor;
         }
 
-
         /* Responsive */
         @media (max-width: 768px) { .container { padding: 1rem; } #filter-controls, #io-controls {grid-template-columns: 1fr;} }
     </style>
 </head>
-<body> <!-- No class needed here, it's set by JS -->
+<body>
 
     <div class="container">
         <h1>GlowNotes</h1>
@@ -258,10 +287,10 @@
     
     <!-- Developer Credits -->
     <div id="developer-credits"> 
-         Developed by <strong>Muhammad Faisal Ali 💗</strong> 
-         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block ml-1 text-teal-400" viewBox="0 0 20 20" fill="currentColor"> 
+        Developed by <strong>Muhammad Faisal Ali 💗</strong> 
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block ml-1 text-teal-400" viewBox="0 0 20 20" fill="currentColor"> 
              <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.48 5.088a.75.75 0 01.087 1.05l-3.25 4.5a.75.75 0 01-1.137.087L5.75 10.75a.75.75 0 111.06-1.06l1.72 1.72 2.7-3.75a.75.75 0 011.05-.087z" clip-rule="evenodd" /> 
-         </svg>
+        </svg>
     </div>
 
 
@@ -288,7 +317,7 @@
 
             let state = { currentView: 'notes' };
             
-            // --- MODAL FACTORY (BUG FIXED) ---
+            // --- MODAL FACTORY ---
             const showConfirmationModal = (message, confirmText = 'Confirm') => {
                 return new Promise((resolve) => {
                     const content = `<p>${escapeHTML(message)}</p>`;
@@ -301,9 +330,9 @@
                     const onConfirm = () => { cleanup(); resolve(true); };
                     const onCancel = (e) => {
                          if (e.target === modal || e.target.classList.contains('modal-close-btn')) {
-                            cleanup();
-                            resolve(false);
-                        }
+                             cleanup();
+                             resolve(false);
+                         }
                     };
                     const cleanup = () => {
                         confirmBtn.removeEventListener('click', onConfirm);
@@ -336,6 +365,15 @@
             const saveNotes = (notes) => { localStorage.setItem('glow-notes', JSON.stringify(notes)); };
             const formatTimestamp = (ts) => new Date(ts).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             const escapeHTML = (str) => { const p = document.createElement('p'); p.textContent = str; return p.innerHTML; };
+
+            const renderMarkdown = (text) => {
+                let safeText = escapeHTML(text);
+                safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/__(.*?)__/g, '<strong>$1</strong>');
+                safeText = safeText.replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/_(.*?)_/g, '<em>$1</em>');
+                safeText = safeText.replace(/~~(.*?)~~/g, '<s>$1</s>');
+                safeText = safeText.replace(/\n/g, '<br>');
+                return safeText;
+            };
 
             // --- RENDERING ---
             const render = () => {
@@ -408,7 +446,20 @@
                     noteCard.querySelector('.edit-btn').onclick = e => { e.stopPropagation(); handleStartEdit(note); };
                     noteCard.querySelector('.delete-btn').onclick = e => { e.stopPropagation(); handleMoveToTrash(note.id); };
                 }
+                
                 elements.notesGrid.appendChild(noteCard);
+
+                const noteContentEl = noteCard.querySelector('.note-content');
+                if (noteContentEl.scrollHeight > noteContentEl.clientHeight) {
+                    const readMoreBtn = document.createElement('button');
+                    readMoreBtn.className = 'read-more-btn';
+                    readMoreBtn.textContent = 'Read More...';
+                    readMoreBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        openReader(note);
+                    };
+                    noteCard.appendChild(readMoreBtn);
+                }
             };
 
             // --- FORM & NOTE ACTIONS ---
@@ -467,6 +518,22 @@
                 }
             }
             
+            const handleDeleteAllData = async () => {
+                const confirmed = await showConfirmationModal(
+                    'Are you absolutely sure? This will delete all your notes permanently from this browser. This action cannot be undone.',
+                    'Yes, Delete Everything'
+                );
+
+                if (confirmed) {
+                    localStorage.removeItem('glow-notes');
+                    hideModal();
+                    render();
+                    setTimeout(() => {
+                        showModal('<p>All your notes have been permanently deleted.</p>', '<button class="modal-btn modal-close-btn">OK</button>');
+                    }, 350);
+                }
+            };
+
             // --- FEATURE HANDLERS ---
             elements.viewTrashBtn.onclick = () => { state.currentView = state.currentView === 'notes' ? 'trash' : 'notes'; render(); };
             elements.focusModeToggle.onchange = () => elements.body.classList.toggle('focus-active', elements.focusModeToggle.checked);
@@ -481,7 +548,7 @@
             elements.clearReminderBtn.onclick = resetReminderUI;
 
             const openReader = (note) => {
-                elements.readerContent.innerHTML = `<h1>${escapeHTML(note.topic)}</h1><p>${escapeHTML(note.content)}</p>`;
+                elements.readerContent.innerHTML = `<h1>${escapeHTML(note.topic)}</h1><div>${renderMarkdown(note.content)}</div>`;
                 elements.readerView.classList.add('visible');
             };
             const closeReader = () => elements.readerView.classList.remove('visible');
@@ -495,9 +562,18 @@
                 const totalTrash = notes.filter(n => n.inTrash).length;
                 const totalReminders = notes.filter(n => !n.inTrash && n.reminder).length;
                 
-                const analyticsHTML = `<h2>Analytics & Settings</h2><div class="analytics-grid"><div class="analytics-item"><div>Active Notes</div><div class="count">${totalActive}</div></div><div class="analytics-item"><div>Pinned Notes</div><div class="count">${totalPinned}</div></div><div class="analytics-item"><div>Notes in Trash</div><div class="count">${totalTrash}</div></div><div class="analytics-item"><div>Active Reminders</div><div class="count">${totalReminders}</div></div></div><div id="notification-status-container"><h3>Notifications</h3><div id="notification-status"></div></div>`;
+                const analyticsHTML = `<h2>Analytics & Settings</h2><div class="analytics-grid"><div class="analytics-item"><div>Active Notes</div><div class="count">${totalActive}</div></div><div class="analytics-item"><div>Pinned Notes</div><div class="count">${totalPinned}</div></div><div class="analytics-item"><div>Notes in Trash</div><div class="count">${totalTrash}</div></div><div class="analytics-item"><div>Active Reminders</div><div class="count">${totalReminders}</div></div></div><div id="notification-status-container"><h3>Notifications</h3><div id="notification-status"></div></div>
+                <hr style="margin: 20px 0; border-color: var(--glass-border); margin-top: 2rem;">
+                <div class="danger-zone" style="text-align: left; margin-top: 1rem;">
+                    <h3 style="color: var(--danger-glow); text-shadow: 0 0 8px var(--danger-glow);">Danger Zone</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted-color); margin-bottom: 1rem;">This action is irreversible and will permanently delete all your notes from this browser.</p>
+                    <button class="modal-btn modal-confirm-btn" id="delete-all-data-btn" style="width: 100%;">Delete All Data</button>
+                </div>`;
+                
                 showModal(analyticsHTML, `<button class="modal-btn modal-close-btn">Close</button>`);
                 renderNotificationStatus();
+                
+                document.getElementById('delete-all-data-btn').onclick = handleDeleteAllData;
             };
             
             const renderNotificationStatus = () => {
@@ -520,28 +596,28 @@
                  const note = getNotes().find(n => n.id === id);
                  let content;
                  if (note.loop) {
-                     content = `<h2>Recurring Reminder Active</h2><p>This note has a recurring reminder set.</p>`;
+                      content = `<h2>Recurring Reminder Active</h2><p>This note has a recurring reminder set.</p>`;
                  } else {
-                     content = `
-                        <h2>Set Reminder</h2>
-                        <p>Choose a quick option or set a custom recurring reminder.</p>
-                        <div class="modal-buttons">
-                           <button class="modal-btn" data-duration="15m">In 15 Minutes</button>
-                           <button class="modal-btn" data-duration="1h">In 1 Hour</button>
-                           <button class="modal-btn" data-duration="1d">Tomorrow</button>
-                        </div>
-                        <hr style="margin: 20px 0; border-color: var(--glass-border);">
-                        <h3>Custom Recurring Reminder</h3>
-                        <div id="custom-reminder-form">
-                           <input type="number" id="custom-reminder-value" class="input-field" value="10" min="1">
-                           <select id="custom-reminder-unit" class="input-field">
-                               <option value="minutes">Minutes</option>
-                               <option value="hours">Hours</option>
-                               <option value="days">Days</option>
-                           </select>
-                           <button class="modal-btn" id="set-recurring-btn">Start Loop</button>
-                        </div>
-                     `;
+                      content = `
+                           <h2>Set Reminder</h2>
+                           <p>Choose a quick option or set a custom recurring reminder.</p>
+                           <div class="modal-buttons">
+                               <button class="modal-btn" data-duration="15m">In 15 Minutes</button>
+                               <button class="modal-btn" data-duration="1h">In 1 Hour</button>
+                               <button class="modal-btn" data-duration="1d">Tomorrow</button>
+                           </div>
+                           <hr style="margin: 20px 0; border-color: var(--glass-border);">
+                           <h3>Custom Recurring Reminder</h3>
+                           <div id="custom-reminder-form">
+                               <input type="number" id="custom-reminder-value" class="input-field" value="10" min="1">
+                               <select id="custom-reminder-unit" class="input-field">
+                                   <option value="minutes">Minutes</option>
+                                   <option value="hours">Hours</option>
+                                   <option value="days">Days</option>
+                               </select>
+                               <button class="modal-btn" id="set-recurring-btn">Start Loop</button>
+                           </div>
+                      `;
                  }
                  const buttons = note.loop ? `<button class="modal-btn modal-confirm-btn" id="stop-loop-btn">Stop Recurring Reminder</button><button class="modal-btn modal-close-btn">Close</button>` : `<button class="modal-btn modal-close-btn">Cancel</button>`;
                  showModal(content, buttons);
@@ -596,7 +672,7 @@
                 let notesUpdated = false;
                 notes.forEach(note => {
                     if (!note.inTrash && note.reminder && new Date(note.reminder).getTime() <= now) {
-                        new Notification('GlowNotes Reminder', { body: note.topic, icon: 'https://placehold.co/128x128/8A2BE2/FFFFFF?text=GN', tag: `note-${note.id}` });
+                        new Notification('GlowNotes Reminder', { body: note.topic, icon: 'https://placehold.co/128x128/007AFF/FFFFFF?text=GN', tag: `note-${note.id}` });
                         
                         if (note.loop) {
                              note.reminder = Date.now() + note.loop.interval;
@@ -663,7 +739,7 @@
                     try {
                         const decodedData = atob(sharedNoteData);
                         const note = JSON.parse(decodedData);
-                        elements.container.style.display = 'none'; // Hide main app
+                        elements.container.style.display = 'none';
                         openReader(note);
                     } catch (e) {
                         console.error("Failed to decode shared note:", e);
