@@ -156,6 +156,7 @@
         .analytics-item .count { font-size: 2rem; font-weight: 700; }
         #notification-status-container { margin-top: 2rem; padding: 1rem; background: rgba(0,0,0,0.05); border-radius: 8px; }
         #notification-status-container p { font-size: 0.9rem; margin-top: 5px; margin-bottom: 0;}
+        #backup-status-container { margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.05); border-radius: 8px; }
 
         /* Custom Recurring Reminder UI */
         #custom-reminder-form { display: flex; gap: 10px; margin-top: 1rem; }
@@ -221,7 +222,6 @@
     </style>
 </head>
 <body>
-
     <div class="container">
         <h1>GlowNotes</h1>
         <p class="subtitle">Your thoughts, in glass & glow.</p>
@@ -276,23 +276,19 @@
         <section id="notes-grid"></section>
     </div>
 
-    <!-- Generic Modal -->
     <div id="modal-container" class="modal-overlay"></div>
     
-    <!-- Full Screen Reader View -->
     <div id="reader-view">
         <button id="reader-close-btn">&times;</button>
         <div id="reader-content"></div>
     </div>
     
-    <!-- Developer Credits -->
     <div id="developer-credits"> 
         Developed by <strong>Muhammad Faisal Ali 💗</strong> 
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block ml-1 text-teal-400" viewBox="0 0 20 20" fill="currentColor"> 
              <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.48 5.088a.75.75 0 01.087 1.05l-3.25 4.5a.75.75 0 01-1.137.087L5.75 10.75a.75.75 0 111.06-1.06l1.72 1.72 2.7-3.75a.75.75 0 011.05-.087z" clip-rule="evenodd" /> 
         </svg>
     </div>
-
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -316,6 +312,106 @@
             };
 
             let state = { currentView: 'notes' };
+            
+            // --- [MODIFIED] DATABASE LOGIC (IndexedDB) ---
+            const DB_NAME = 'GlowNotesDB';
+            const DB_VERSION = 1;
+            const NOTES_STORE_NAME = 'notes';
+            const META_STORE_NAME = 'meta';
+            let db;
+
+            function initDB() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                    request.onupgradeneeded = (event) => {
+                        const dbInstance = event.target.result;
+                        if (!dbInstance.objectStoreNames.contains(NOTES_STORE_NAME)) {
+                            dbInstance.createObjectStore(NOTES_STORE_NAME, { keyPath: 'id' });
+                        }
+                        if (!dbInstance.objectStoreNames.contains(META_STORE_NAME)) {
+                            dbInstance.createObjectStore(META_STORE_NAME, { keyPath: 'key' });
+                        }
+                    };
+
+                    request.onsuccess = (event) => {
+                        db = event.target.result;
+                        console.log('Database initialized successfully.');
+                        resolve(db);
+                    };
+
+                    request.onerror = (event) => {
+                        console.error('Database error:', event.target.errorCode);
+                        reject(event.target.error);
+                    };
+                });
+            }
+            
+            async function getNotes() {
+                return new Promise((resolve, reject) => {
+                    if (!db) return resolve([]);
+                    const transaction = db.transaction([NOTES_STORE_NAME], 'readonly');
+                    const store = transaction.objectStore(NOTES_STORE_NAME);
+                    const request = store.getAll();
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            async function saveNotes(notes) {
+                return new Promise((resolve, reject) => {
+                    if (!db) return reject('DB not initialized');
+                    const transaction = db.transaction([NOTES_STORE_NAME], 'readwrite');
+                    const store = transaction.objectStore(NOTES_STORE_NAME);
+                    
+                    // Clear existing notes before saving the new array
+                    store.clear().onsuccess = () => {
+                        let completed = 0;
+                        if (notes.length === 0) {
+                             // After clearing, update metadata for backup check
+                            updateBackupMetadata(0).then(resolve);
+                            return;
+                        }
+                        notes.forEach(note => {
+                            const request = store.put(note);
+                            request.onsuccess = () => {
+                                completed++;
+                                if (completed === notes.length) {
+                                     // After all notes are saved, update metadata
+                                    updateBackupMetadata(notes.length).then(resolve);
+                                }
+                            };
+                        });
+                    };
+                    transaction.onerror = () => reject(transaction.error);
+                });
+            }
+            
+            async function getMeta(key) {
+                return new Promise((resolve, reject) => {
+                    if (!db) return resolve(null);
+                    const transaction = db.transaction([META_STORE_NAME], 'readonly');
+                    const store = transaction.objectStore(META_STORE_NAME);
+                    const request = store.get(key);
+                    request.onsuccess = () => resolve(request.result ? request.result.value : null);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+            
+            async function setMeta(key, value) {
+                return new Promise((resolve, reject) => {
+                    if (!db) return reject('DB not initialized');
+                    const transaction = db.transaction([META_STORE_NAME], 'readwrite');
+                    const store = transaction.objectStore(META_STORE_NAME);
+                    const request = store.put({ key, value });
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            async function updateBackupMetadata(currentCount) {
+                 await setMeta('lastNoteCount', currentCount);
+            }
             
             // --- MODAL FACTORY ---
             const showModal = (content, buttons) => {
@@ -401,8 +497,6 @@
             };
 
             // --- DATA & UTILITY ---
-            const getNotes = () => JSON.parse(localStorage.getItem('glow-notes') || '[]');
-            const saveNotes = (notes) => { localStorage.setItem('glow-notes', JSON.stringify(notes)); };
             const formatTimestamp = (ts) => new Date(ts).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             const escapeHTML = (str) => { const p = document.createElement('p'); p.textContent = str; return p.innerHTML; };
 
@@ -414,10 +508,50 @@
                 safeText = safeText.replace(/\n/g, '<br>');
                 return safeText;
             };
+            
+            // --- [NEW] PASTE FORMATTING HANDLER ---
+            function convertHtmlToMarkdown(html) {
+                // A simple converter. For more complex scenarios, a dedicated library would be better.
+                let tempDiv = document.createElement("div");
+                tempDiv.innerHTML = html;
+
+                // Handle block elements like paragraphs and divs to create newlines
+                tempDiv.innerHTML = tempDiv.innerHTML.replace(/<p>/gi, '').replace(/<\/p>/gi, '\n');
+                tempDiv.innerHTML = tempDiv.innerHTML.replace(/<div>/gi, '').replace(/<\/div>/gi, '\n');
+                tempDiv.innerHTML = tempDiv.innerHTML.replace(/<br\s*\/?>/gi, '\n');
+                
+                // Convert formatting tags to Markdown
+                let text = tempDiv.innerHTML;
+                text = text.replace(/<strong>(.*?)<\/strong>/gi, '**$1**').replace(/<b>(.*?)<\/b>/gi, '**$1**');
+                text = text.replace(/<em>(.*?)<\/em>/gi, '*$1*').replace(/<i>(.*?)<\/i>/gi, '*$1*');
+                
+                // Strip any remaining HTML tags
+                tempDiv.innerHTML = text;
+                return tempDiv.textContent || tempDiv.innerText || "";
+            }
+            
+            elements.noteContentInput.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const clipboardData = e.clipboardData || window.clipboardData;
+                let pastedData = '';
+                
+                // Prefer HTML content if available
+                if (clipboardData.types.includes('text/html')) {
+                    const html = clipboardData.getData('text/html');
+                    pastedData = convertHtmlToMarkdown(html);
+                } else {
+                    // Fallback to plain text
+                    pastedData = clipboardData.getData('text/plain');
+                }
+                
+                // Insert the converted text into the textarea
+                document.execCommand('insertText', false, pastedData);
+            });
+
 
             // --- RENDERING ---
-            const render = () => {
-                const notes = getNotes();
+            const render = async () => {
+                const notes = await getNotes();
                 const searchTerm = elements.filterInput.value.toLowerCase();
                 const dateFilterValue = elements.dateFilter.value;
                 const propertyFilterValue = elements.propertyFilter.value;
@@ -502,24 +636,27 @@
                 }
             };
 
-            // --- FORM & NOTE ACTIONS ---
+            // --- FORM & NOTE ACTIONS (NOW ASYNC) ---
             const resetForm = () => {
                 elements.noteTopicInput.value = ''; elements.noteContentInput.value = ''; elements.editNoteIdInput.value = '';
                 elements.saveNoteBtn.textContent = 'Save Note'; elements.cancelEditBtn.style.display = 'none';
                 resetReminderUI(); elements.noteTopicInput.focus();
             };
 
-            const handleSaveOrUpdateNote = () => {
+            const handleSaveOrUpdateNote = async () => {
                 const topic = elements.noteTopicInput.value.trim(); const content = elements.noteContentInput.value.trim();
                 const noteIdToEdit = elements.editNoteIdInput.value; const reminderTime = elements.reminderInput.value ? new Date(elements.reminderInput.value).getTime() : null;
                 if (!topic || !content) { showModal(`<p>Please provide both a topic and content.</p>`, `<button class="modal-btn modal-close-btn">OK</button>`); return; }
-                let notes = getNotes();
+                
+                let notes = await getNotes();
                 if (noteIdToEdit) {
                     notes = notes.map(note => note.id == noteIdToEdit ? { ...note, topic, content, reminder: reminderTime, reminderFired: reminderTime ? false : note.reminderFired, loop: null } : note);
                 } else {
                     notes.push({ id: Date.now(), topic, content, pinned: false, inTrash: false, reminder: reminderTime, reminderFired: false, loop: null });
                 }
-                saveNotes(notes); resetForm(); render();
+                await saveNotes(notes); 
+                resetForm(); 
+                render();
             };
 
             const handleStartEdit = (note) => {
@@ -534,26 +671,26 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' }); elements.noteTopicInput.focus();
             };
             
-            const handleTogglePin = (id) => { let notes = getNotes(); notes.forEach(n => { if(n.id === id) n.pinned = !n.pinned }); saveNotes(notes); render(); };
+            const handleTogglePin = async (id) => { let notes = await getNotes(); notes.forEach(n => { if(n.id === id) n.pinned = !n.pinned }); await saveNotes(notes); render(); };
             
             async function handleMoveToTrash(id) {
                 const confirmed = await showConfirmationModal('Move this note to trash?', 'Trash');
                 if (confirmed) {
-                    let notes = getNotes();
+                    let notes = await getNotes();
                     notes.forEach(n => { if(n.id === id) n.inTrash = true });
-                    saveNotes(notes);
+                    await saveNotes(notes);
                     render();
                 }
             }
             
-            const handleRestoreNote = (id) => { let notes = getNotes(); notes.forEach(n => { if(n.id === id) n.inTrash = false }); saveNotes(notes); render(); };
+            const handleRestoreNote = async (id) => { let notes = await getNotes(); notes.forEach(n => { if(n.id === id) n.inTrash = false }); await saveNotes(notes); render(); };
 
             async function handlePermanentDelete(id) {
                 const confirmed = await showConfirmationModal('Permanently delete? This cannot be undone.', 'Delete');
                 if (confirmed) {
-                    let notes = getNotes();
+                    let notes = await getNotes();
                     notes = notes.filter(n => n.id !== id);
-                    saveNotes(notes);
+                    await saveNotes(notes);
                     render();
                 }
             }
@@ -565,7 +702,8 @@
                 );
 
                 if (confirmed) {
-                    localStorage.removeItem('glow-notes');
+                    await saveNotes([]); // Save an empty array to DB
+                    await setMeta('lastBackupCount', 0); // Reset backup metadata
                     hideModal();
                     render();
                     setTimeout(() => {
@@ -595,14 +733,14 @@
             elements.readerCloseBtn.onclick = closeReader;
             document.onkeydown = (e) => { if (e.key === "Escape") closeReader(); };
             
-            elements.settingsBtn.onclick = () => {
-                const notes = getNotes();
+            elements.settingsBtn.onclick = async () => {
+                const notes = await getNotes();
                 const totalActive = notes.filter(n => !n.inTrash).length;
                 const totalPinned = notes.filter(n => !n.inTrash && n.pinned).length;
                 const totalTrash = notes.filter(n => n.inTrash).length;
                 const totalReminders = notes.filter(n => !n.inTrash && n.reminder).length;
                 
-                const analyticsHTML = `<h2>Analytics & Settings</h2><div class="analytics-grid"><div class="analytics-item"><div>Active Notes</div><div class="count">${totalActive}</div></div><div class="analytics-item"><div>Pinned Notes</div><div class="count">${totalPinned}</div></div><div class="analytics-item"><div>Notes in Trash</div><div class="count">${totalTrash}</div></div><div class="analytics-item"><div>Active Reminders</div><div class="count">${totalReminders}</div></div></div><div id="notification-status-container"><h3>Notifications</h3><div id="notification-status"></div></div>
+                const analyticsHTML = `<h2>Analytics & Settings</h2><div class="analytics-grid"><div class="analytics-item"><div>Active Notes</div><div class="count">${totalActive}</div></div><div class="analytics-item"><div>Pinned Notes</div><div class="count">${totalPinned}</div></div><div class="analytics-item"><div>Notes in Trash</div><div class="count">${totalTrash}</div></div><div class="analytics-item"><div>Active Reminders</div><div class="count">${totalReminders}</div></div></div><div id="notification-status-container"><h3>Notifications</h3><div id="notification-status"></div></div><div id="backup-status-container"><h3>Automatic Backups</h3><div id="backup-status"></div></div>
                 <hr style="margin: 20px 0; border-color: var(--glass-border); margin-top: 2rem;">
                 <div class="danger-zone" style="text-align: left; margin-top: 1rem;">
                     <h3 style="color: var(--danger-glow); text-shadow: 0 0 8px var(--danger-glow);">Danger Zone</h3>
@@ -612,6 +750,7 @@
                 
                 showModal(analyticsHTML, `<button class="modal-btn modal-close-btn">Close</button>`);
                 renderNotificationStatus();
+                renderBackupStatus(); // New function call
                 
                 document.getElementById('delete-all-data-btn').onclick = handleDeleteAllData;
             };
@@ -632,8 +771,51 @@
                 }
             };
             
-            const showScheduleModal = (id) => {
-                const note = getNotes().find(n => n.id === id);
+            // --- [NEW] BACKUP STATUS & REGISTRATION ---
+            async function renderBackupStatus() {
+                const backupStatusEl = document.getElementById('backup-status');
+                if (!backupStatusEl) return;
+
+                if ('serviceWorker' in navigator && 'PeriodicSyncManager' in window) {
+                    const registration = await navigator.serviceWorker.ready;
+                    const status = await navigator.permissions.query({ name: 'periodic-background-sync' });
+                    if (status.state === 'granted') {
+                        const tags = await registration.periodicSync.getTags();
+                        if (tags.includes('daily-backup-check')) {
+                            backupStatusEl.innerHTML = `<p>✅ Automatic daily backup check is active. You'll be notified if new notes are found.</p>`;
+                        } else {
+                            backupStatusEl.innerHTML = `<p>⚠️ Backup check is not registered. <button id="register-backup-btn" class="action-btn">Enable Now</button></p>`;
+                            document.getElementById('register-backup-btn').onclick = registerDailyBackup;
+                        }
+                    } else {
+                        backupStatusEl.innerHTML = `<p>✋ Permission needed for background backups. <button id="register-backup-btn" class="action-btn">Request Permission</button></p>`;
+                        document.getElementById('register-backup-btn').onclick = registerDailyBackup;
+                    }
+                } else {
+                    backupStatusEl.innerHTML = `<p>❌ Your browser does not support automatic background backups.</p>`;
+                }
+            }
+            
+            async function registerDailyBackup() {
+                const registration = await navigator.serviceWorker.ready;
+                try {
+                    await registration.periodicSync.register('daily-backup-check', {
+                        minInterval: 12 * 60 * 60 * 1000, // Minimum 12 hours
+                    });
+                    console.log('Periodic sync registered!');
+                    // Initialize the backup count
+                    const notes = await getNotes();
+                    await setMeta('lastBackupCount', notes.length);
+                    renderBackupStatus();
+                } catch (e) {
+                    console.error('Periodic sync could not be registered!', e);
+                    renderBackupStatus();
+                }
+            }
+            
+            const showScheduleModal = async (id) => {
+                const notes = await getNotes();
+                const note = notes.find(n => n.id === id);
                 let content;
                 if (note.loop) {
                     content = `<h2>Recurring Reminder Active</h2><p>This note has a recurring reminder set.</p>`;
@@ -670,7 +852,7 @@
                 });
             };
 
-            const setQuickReminder = (id, duration) => {
+            const setQuickReminder = async (id, duration) => {
                 let reminderTime;
                 const now = Date.now();
                 if(duration === '15m') reminderTime = now + 15 * 60 * 1000;
@@ -678,13 +860,13 @@
                 if(duration === '1d') reminderTime = now + 24 * 60 * 60 * 1000;
                 
                 if(reminderTime) {
-                    let notes = getNotes();
+                    let notes = await getNotes();
                     notes = notes.map(note => note.id === id ? { ...note, reminder: reminderTime, reminderFired: false, loop: null } : note);
-                    saveNotes(notes); render(); hideModal();
+                    await saveNotes(notes); render(); hideModal();
                 }
             };
 
-            const handleSetRecurring = (id) => {
+            const handleSetRecurring = async (id) => {
                 const value = parseInt(document.getElementById('custom-reminder-value').value, 10);
                 const unit = document.getElementById('custom-reminder-unit').value;
                 if (isNaN(value) || value <= 0) return;
@@ -694,20 +876,20 @@
                 if (unit === 'hours') intervalMs = value * 60 * 60 * 1000;
                 if (unit === 'days') intervalMs = value * 24 * 60 * 60 * 1000;
                 
-                let notes = getNotes();
+                let notes = await getNotes();
                 notes = notes.map(note => note.id === id ? { ...note, reminder: Date.now() + intervalMs, reminderFired: false, loop: { interval: intervalMs, value, unit } } : note);
-                saveNotes(notes); render(); hideModal();
+                await saveNotes(notes); render(); hideModal();
             };
             
-            const stopRecurringReminder = (id) => {
-                let notes = getNotes();
+            const stopRecurringReminder = async (id) => {
+                let notes = await getNotes();
                 notes = notes.map(note => note.id === id ? { ...note, reminder: null, loop: null } : note);
-                saveNotes(notes); render(); hideModal();
+                await saveNotes(notes); render(); hideModal();
             };
 
-            const checkReminders = () => {
+            const checkReminders = async () => {
                 if(Notification.permission !== 'granted') return;
-                const notes = getNotes();
+                const notes = await getNotes();
                 const now = Date.now();
                 let notesUpdated = false;
                 notes.forEach(note => {
@@ -724,7 +906,7 @@
                     }
                 });
                 if(notesUpdated) {
-                    saveNotes(notes);
+                    await saveNotes(notes);
                     render(); // Re-render to update the UI for reminders
                 }
             };
@@ -743,8 +925,8 @@
                 };
             };
             
-            const handleExportNotes = () => {
-                const notes = getNotes();
+            const handleExportNotes = async () => {
+                const notes = await getNotes();
                 if (notes.length === 0) { 
                     showModal("<p>There are no notes to export.</p>", `<button class="modal-btn modal-close-btn">OK</button>`); 
                     return; 
@@ -764,13 +946,15 @@
                 document.body.appendChild(downloadAnchorNode);
                 downloadAnchorNode.click();
                 downloadAnchorNode.remove();
+
+                // After exporting, update the backup metadata
+                await setMeta('lastBackupCount', notes.length);
             };
 
             const handleImportNotes = async (event) => {
                 const files = event.target.files;
                 if (!files.length) return;
 
-                // Helper function to read a file and return a promise
                 const readFile = (file) => {
                     return new Promise((resolve, reject) => {
                         const reader = new FileReader();
@@ -792,23 +976,20 @@
                 };
 
                 try {
-                    // Read all files concurrently
                     const noteArrays = await Promise.all(Array.from(files).map(readFile));
-                    const allImportedNotes = noteArrays.flat(); // Combine all notes from all files into one array
+                    const allImportedNotes = noteArrays.flat();
 
-                    const currentNotes = getNotes();
+                    const currentNotes = await getNotes();
                     const existingIds = new Set(currentNotes.map(n => n.id));
                     const notesToAdd = [];
 
                     allImportedNotes.forEach((importedNote, index) => {
                         if (existingIds.has(importedNote.id)) {
-                            // ID collision: create a new note with a new, unique ID
                             const newNote = { ...importedNote, id: Date.now() + index };
                             notesToAdd.push(newNote);
                         } else {
-                            // No collision: add the note as is
                             notesToAdd.push(importedNote);
-                            existingIds.add(importedNote.id); // Add new ID to set to prevent duplicates within the same import
+                            existingIds.add(importedNote.id);
                         }
                     });
 
@@ -823,7 +1004,7 @@
                     
                     if (confirmed && notesToAdd.length > 0) {
                         const finalNotes = [...currentNotes, ...notesToAdd];
-                        saveNotes(finalNotes);
+                        await saveNotes(finalNotes);
                         render();
                         setTimeout(() => {
                             hideModal();
@@ -838,7 +1019,6 @@
                 } catch (error) {
                     showModal(`<p>Import failed: ${error.message}</p>`, `<button class="modal-btn modal-close-btn">OK</button>`);
                 } finally {
-                    // Reset the input value to allow re-importing the same file(s)
                     elements.importInput.value = '';
                 }
             };
@@ -852,22 +1032,55 @@
                         const note = JSON.parse(decodedData);
                         elements.container.style.display = 'none';
                         openReader(note);
+                        return true;
                     } catch (e) {
                         console.error("Failed to decode shared note:", e);
+                        return false;
                     }
                 }
+                return false;
             };
+            
+            const checkForBackupAction = () => {
+                 const urlParams = new URLSearchParams(window.location.search);
+                 if (urlParams.get('action') === 'download-backup') {
+                     handleExportNotes();
+                     // Clean up the URL
+                     window.history.replaceState({}, document.title, window.location.pathname);
+                 }
+            }
 
             // --- INITIALIZATION ---
-            [elements.filterInput, elements.dateFilter, elements.propertyFilter].forEach(el => el.oninput = render);
-            elements.saveNoteBtn.onclick = handleSaveOrUpdateNote;
-            elements.cancelEditBtn.onclick = resetForm;
-            elements.exportBtn.onclick = handleExportNotes;
-            elements.importInput.onchange = handleImportNotes;
-            
-            setInterval(checkReminders, 15000);
-            render();
-            checkForSharedNote();
+            async function initialize() {
+                if (checkForSharedNote()) return; // Don't initialize app if showing shared note
+                
+                await initDB();
+                
+                [elements.filterInput, elements.dateFilter, elements.propertyFilter].forEach(el => el.oninput = render);
+                elements.saveNoteBtn.onclick = handleSaveOrUpdateNote;
+                elements.cancelEditBtn.onclick = resetForm;
+                elements.exportBtn.onclick = handleExportNotes;
+                elements.importInput.onchange = handleImportNotes;
+                
+                setInterval(checkReminders, 15000);
+                
+                // --- [NEW] SERVICE WORKER REGISTRATION ---
+                if ('serviceWorker' in navigator) {
+                    window.addEventListener('load', () => {
+                        navigator.serviceWorker.register('./service-worker.js')
+                            .then(reg => {
+                                console.log('Service worker registered.', reg);
+                                // After registration, check for backup action from notification
+                                checkForBackupAction();
+                            })
+                            .catch(err => console.error('Service worker registration failed:', err));
+                    });
+                }
+                
+                render();
+            }
+
+            initialize();
         });
     </script>
 </body>
