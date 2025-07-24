@@ -252,7 +252,7 @@
         
         <div id="io-controls">
             <label for="import-notes-input" class="action-btn glass">Import Notes</label>
-            <input type="file" id="import-notes-input" accept=".json">
+            <input type="file" id="import-notes-input" accept=".json" multiple>
             <button id="export-notes-btn" class="action-btn glass">Export Notes</button>
         </div>
 
@@ -318,6 +318,23 @@
             let state = { currentView: 'notes' };
             
             // --- MODAL FACTORY ---
+            const showModal = (content, buttons) => {
+                elements.modalContainer.innerHTML = `<div class="modal-box glass">${content}</div>`;
+                if(buttons) {
+                    const buttonContainer = document.createElement('div');
+                    buttonContainer.className = 'modal-buttons';
+                    buttonContainer.innerHTML = buttons;
+                    elements.modalContainer.querySelector('.modal-box').appendChild(buttonContainer);
+                }
+                elements.modalContainer.classList.add('visible');
+            };
+
+            const hideModal = () => elements.modalContainer.classList.remove('visible');
+
+            elements.modalContainer.addEventListener('click', (e) => {
+                if (e.target === elements.modalContainer || e.target.classList.contains('modal-close-btn')) hideModal();
+            });
+
             const showConfirmationModal = (message, confirmText = 'Confirm') => {
                 return new Promise((resolve) => {
                     const content = `<p>${escapeHTML(message)}</p>`;
@@ -329,10 +346,10 @@
                     
                     const onConfirm = () => { cleanup(); resolve(true); };
                     const onCancel = (e) => {
-                         if (e.target === modal || e.target.classList.contains('modal-close-btn')) {
-                             cleanup();
-                             resolve(false);
-                         }
+                        if (e.target === modal || e.target.classList.contains('modal-close-btn')) {
+                            cleanup();
+                            resolve(false);
+                        }
                     };
                     const cleanup = () => {
                         confirmBtn.removeEventListener('click', onConfirm);
@@ -345,20 +362,43 @@
                 });
             };
 
-            const showModal = (content, buttons) => {
-                elements.modalContainer.innerHTML = `<div class="modal-box glass">${content}</div>`;
-                if(buttons) {
-                    const buttonContainer = document.createElement('div');
-                    buttonContainer.className = 'modal-buttons';
-                    buttonContainer.innerHTML = buttons;
-                    elements.modalContainer.querySelector('.modal-box').appendChild(buttonContainer);
-                }
-                elements.modalContainer.classList.add('visible');
+            const showImportConfirmationModal = (details) => {
+                return new Promise((resolve) => {
+                    const content = `
+                        <h2>Confirm Import</h2>
+                        <div class="analytics-grid" style="text-align: left; margin-bottom: 1.5rem;">
+                            <div class="analytics-item"><div>Files Selected</div><div class="count">${details.fileCount}</div></div>
+                            <div class="analytics-item"><div>Total Notes in Files</div><div class="count">${details.importedCount}</div></div>
+                            <div class="analytics-item"><div>New Notes to Add</div><div class="count">${details.newNotesCount}</div></div>
+                            <div class="analytics-item"><div>Total After Merge</div><div class="count">${details.totalAfterMerge}</div></div>
+                        </div>
+                        <p>${details.newNotesCount > 0 ? `You are about to add ${details.newNotesCount} new note(s). Notes with conflicting IDs will be assigned new IDs.` : 'No new notes found to import.'}</p>
+                    `;
+                    const buttons = `
+                        <button class="modal-btn modal-close-btn">Cancel</button>
+                        ${details.newNotesCount > 0 ? '<button class="modal-btn modal-confirm-btn" id="modal-confirm-action" style="background-color: var(--primary-glow);">Merge Notes</button>' : ''}
+                    `;
+                    showModal(content, buttons);
+
+                    const confirmBtn = document.getElementById('modal-confirm-action');
+                    const modal = elements.modalContainer;
+
+                    const onConfirm = () => { cleanup(); resolve(true); };
+                    const onCancel = (e) => {
+                        if (e.target === modal || e.target.classList.contains('modal-close-btn')) {
+                            cleanup();
+                            resolve(false);
+                        }
+                    };
+                    const cleanup = () => {
+                        if (confirmBtn) confirmBtn.removeEventListener('click', onConfirm);
+                        modal.removeEventListener('click', onCancel);
+                    };
+
+                    if (confirmBtn) confirmBtn.addEventListener('click', onConfirm);
+                    modal.addEventListener('click', onCancel);
+                });
             };
-            const hideModal = () => elements.modalContainer.classList.remove('visible');
-            elements.modalContainer.addEventListener('click', (e) => {
-                if (e.target === elements.modalContainer || e.target.classList.contains('modal-close-btn')) hideModal();
-            });
 
             // --- DATA & UTILITY ---
             const getNotes = () => JSON.parse(localStorage.getItem('glow-notes') || '[]');
@@ -406,8 +446,8 @@
                             return noteTime >= weekStart;
                         }
                         if (dateFilterValue === 'month') {
-                             const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-                             return noteTime >= monthStart;
+                            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+                            return noteTime >= monthStart;
                         }
                         return true;
                     });
@@ -433,7 +473,7 @@
                     reminderIconHTML = `<span class="reminder-display ${isDue ? 'due' : ''}" title="Reminder: ${formatTimestamp(note.reminder)}">${loopIcon}⏰</span>`;
                 }
                 const displayTimestamp = note.reminder && !note.inTrash ? note.reminder : note.id;
-                noteCard.innerHTML = `<div class="card-buttons">${buttonsHTML}</div><h3 class="note-topic">${escapeHTML(note.topic)}</h3><p class="note-content">${escapeHTML(note.content)}</p><div class="note-footer">${reminderIconHTML}<span>${formatTimestamp(displayTimestamp)}</span></div>`;
+                noteCard.innerHTML = `<div class="card-buttons">${buttonsHTML}</div><h3 class="note-topic">${escapeHTML(note.topic)}</h3><div class="note-content">${renderMarkdown(note.content)}</div><div class="note-footer">${reminderIconHTML}<span>${formatTimestamp(displayTimestamp)}</span></div>`;
                 
                 if (note.inTrash) {
                     noteCard.querySelector('.restore-btn').onclick = e => { e.stopPropagation(); handleRestoreNote(note.id); };
@@ -593,41 +633,41 @@
             };
             
             const showScheduleModal = (id) => {
-                 const note = getNotes().find(n => n.id === id);
-                 let content;
-                 if (note.loop) {
-                      content = `<h2>Recurring Reminder Active</h2><p>This note has a recurring reminder set.</p>`;
-                 } else {
-                      content = `
-                           <h2>Set Reminder</h2>
-                           <p>Choose a quick option or set a custom recurring reminder.</p>
-                           <div class="modal-buttons">
-                               <button class="modal-btn" data-duration="15m">In 15 Minutes</button>
-                               <button class="modal-btn" data-duration="1h">In 1 Hour</button>
-                               <button class="modal-btn" data-duration="1d">Tomorrow</button>
-                           </div>
-                           <hr style="margin: 20px 0; border-color: var(--glass-border);">
-                           <h3>Custom Recurring Reminder</h3>
-                           <div id="custom-reminder-form">
-                               <input type="number" id="custom-reminder-value" class="input-field" value="10" min="1">
-                               <select id="custom-reminder-unit" class="input-field">
-                                   <option value="minutes">Minutes</option>
-                                   <option value="hours">Hours</option>
-                                   <option value="days">Days</option>
-                               </select>
-                               <button class="modal-btn" id="set-recurring-btn">Start Loop</button>
-                           </div>
-                      `;
-                 }
-                 const buttons = note.loop ? `<button class="modal-btn modal-confirm-btn" id="stop-loop-btn">Stop Recurring Reminder</button><button class="modal-btn modal-close-btn">Close</button>` : `<button class="modal-btn modal-close-btn">Cancel</button>`;
-                 showModal(content, buttons);
+                const note = getNotes().find(n => n.id === id);
+                let content;
+                if (note.loop) {
+                    content = `<h2>Recurring Reminder Active</h2><p>This note has a recurring reminder set.</p>`;
+                } else {
+                    content = `
+                        <h2>Set Reminder</h2>
+                        <p>Choose a quick option or set a custom recurring reminder.</p>
+                        <div class="modal-buttons">
+                            <button class="modal-btn" data-duration="15m">In 15 Minutes</button>
+                            <button class="modal-btn" data-duration="1h">In 1 Hour</button>
+                            <button class="modal-btn" data-duration="1d">Tomorrow</button>
+                        </div>
+                        <hr style="margin: 20px 0; border-color: var(--glass-border);">
+                        <h3>Custom Recurring Reminder</h3>
+                        <div id="custom-reminder-form">
+                            <input type="number" id="custom-reminder-value" class="input-field" value="10" min="1">
+                            <select id="custom-reminder-unit" class="input-field">
+                                <option value="minutes">Minutes</option>
+                                <option value="hours">Hours</option>
+                                <option value="days">Days</option>
+                            </select>
+                            <button class="modal-btn" id="set-recurring-btn">Start Loop</button>
+                        </div>
+                    `;
+                }
+                const buttons = note.loop ? `<button class="modal-btn modal-confirm-btn" id="stop-loop-btn">Stop Recurring Reminder</button><button class="modal-btn modal-close-btn">Close</button>` : `<button class="modal-btn modal-close-btn">Cancel</button>`;
+                showModal(content, buttons);
 
-                 const modalBox = elements.modalContainer.querySelector('.modal-box');
-                 modalBox.addEventListener('click', (e) => {
+                const modalBox = elements.modalContainer.querySelector('.modal-box');
+                modalBox.addEventListener('click', (e) => {
                     if(e.target.dataset.duration) setQuickReminder(id, e.target.dataset.duration);
                     if(e.target.id === 'set-recurring-btn') handleSetRecurring(id);
                     if(e.target.id === 'stop-loop-btn') stopRecurringReminder(id);
-                 });
+                });
             };
 
             const setQuickReminder = (id, duration) => {
@@ -675,15 +715,18 @@
                         new Notification('GlowNotes Reminder', { body: note.topic, icon: 'https://placehold.co/128x128/007AFF/FFFFFF?text=GN', tag: `note-${note.id}` });
                         
                         if (note.loop) {
-                             note.reminder = Date.now() + note.loop.interval;
+                            note.reminder = Date.now() + note.loop.interval;
                         } else {
-                             note.reminder = null; // Clear one-time reminder
-                             note.reminderFired = true;
+                            note.reminder = null; // Clear one-time reminder
+                            note.reminderFired = true;
                         }
                         notesUpdated = true;
                     }
                 });
-                if(notesUpdated) saveNotes(notes);
+                if(notesUpdated) {
+                    saveNotes(notes);
+                    render(); // Re-render to update the UI for reminders
+                }
             };
             
             const handleShareNote = (note) => {
@@ -702,34 +745,102 @@
             
             const handleExportNotes = () => {
                 const notes = getNotes();
-                if (notes.length === 0) { showModal("<p>There are no notes to export.</p>", `<button class="modal-btn modal-close-btn">OK</button>`); return; }
+                if (notes.length === 0) { 
+                    showModal("<p>There are no notes to export.</p>", `<button class="modal-btn modal-close-btn">OK</button>`); 
+                    return; 
+                }
+                
+                const now = new Date();
+                const dateString = now.toISOString().slice(0, 10); // YYYY-MM-DD
+                const dayString = now.toLocaleDateString('en-US', { weekday: 'long' });
+                const notesCount = notes.length;
+                
+                const filename = `glow-notes-backup-${dateString}-${dayString}-${notesCount}-notes.json`;
+
                 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(notes, null, 2));
                 const downloadAnchorNode = document.createElement('a');
                 downloadAnchorNode.setAttribute("href", dataStr);
-                downloadAnchorNode.setAttribute("download", `glow-notes-backup-${Date.now()}.json`);
+                downloadAnchorNode.setAttribute("download", filename);
                 document.body.appendChild(downloadAnchorNode);
                 downloadAnchorNode.click();
                 downloadAnchorNode.remove();
             };
 
-            const handleImportNotes = (event) => {
-                const file = event.target.files[0]; if (!file) return;
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    try {
-                        const importedNotes = JSON.parse(e.target.result);
-                        if (!Array.isArray(importedNotes)) throw new Error("Invalid file format.");
-                        const merge = await showConfirmationModal('Merge with existing notes? (Cancel to replace)', 'Merge');
-                        const currentNotes = getNotes();
-                        let finalNotes = merge ? [...currentNotes, ...importedNotes.filter(n => !currentNotes.find(c => c.id === n.id))] : importedNotes;
-                        saveNotes(finalNotes); render();
-                    } catch (error) {
-                        showModal("<p>Import failed. Invalid file.</p>", `<button class="modal-btn modal-close-btn">OK</button>`);
-                    } finally {
-                        elements.importInput.value = '';
-                    }
+            const handleImportNotes = async (event) => {
+                const files = event.target.files;
+                if (!files.length) return;
+
+                // Helper function to read a file and return a promise
+                const readFile = (file) => {
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            try {
+                                const notes = JSON.parse(e.target.result);
+                                if (!Array.isArray(notes)) {
+                                    reject(new Error(`File "${file.name}" has an invalid format.`));
+                                } else {
+                                    resolve(notes);
+                                }
+                            } catch (err) {
+                                reject(new Error(`Could not parse file "${file.name}".`));
+                            }
+                        };
+                        reader.onerror = () => reject(new Error(`There was an issue reading file "${file.name}".`));
+                        reader.readAsText(file);
+                    });
                 };
-                reader.readAsText(file);
+
+                try {
+                    // Read all files concurrently
+                    const noteArrays = await Promise.all(Array.from(files).map(readFile));
+                    const allImportedNotes = noteArrays.flat(); // Combine all notes from all files into one array
+
+                    const currentNotes = getNotes();
+                    const existingIds = new Set(currentNotes.map(n => n.id));
+                    const notesToAdd = [];
+
+                    allImportedNotes.forEach((importedNote, index) => {
+                        if (existingIds.has(importedNote.id)) {
+                            // ID collision: create a new note with a new, unique ID
+                            const newNote = { ...importedNote, id: Date.now() + index };
+                            notesToAdd.push(newNote);
+                        } else {
+                            // No collision: add the note as is
+                            notesToAdd.push(importedNote);
+                            existingIds.add(importedNote.id); // Add new ID to set to prevent duplicates within the same import
+                        }
+                    });
+
+                    const importDetails = {
+                        fileCount: files.length,
+                        importedCount: allImportedNotes.length,
+                        newNotesCount: notesToAdd.length,
+                        totalAfterMerge: currentNotes.length + notesToAdd.length
+                    };
+                    
+                    const confirmed = await showImportConfirmationModal(importDetails);
+                    
+                    if (confirmed && notesToAdd.length > 0) {
+                        const finalNotes = [...currentNotes, ...notesToAdd];
+                        saveNotes(finalNotes);
+                        render();
+                        setTimeout(() => {
+                            hideModal();
+                            setTimeout(() => {
+                                 showModal(`<p>Successfully merged ${notesToAdd.length} new notes.</p>`, `<button class="modal-btn modal-close-btn">OK</button>`);
+                            }, 100);
+                        }, 300);
+                    } else {
+                       if (!confirmed) hideModal();
+                    }
+
+                } catch (error) {
+                    showModal(`<p>Import failed: ${error.message}</p>`, `<button class="modal-btn modal-close-btn">OK</button>`);
+                } finally {
+                    // Reset the input value to allow re-importing the same file(s)
+                    elements.importInput.value = '';
+                }
             };
 
             const checkForSharedNote = () => {
